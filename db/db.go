@@ -4,14 +4,27 @@ import (
 	"database/sql"
 )
 
-// CreateTableUsers create table users if not exist
-func CreateTableUsers(sqlDB *sql.DB) error {
+// createTableUsers create table users if not exist
+func createTableUsers(sqlDB *sql.DB) error {
 	_, err := sqlDB.Exec(CREATE_TBL_USERS)
 	return err
 }
 
-// CreateTableServices create table services if not exist
-func CreateTableServices(sqlDB *sql.DB) error {
+// createTableServices create table services if not exist
+func createTableServices(sqlDB *sql.DB) error {
 	_, err := sqlDB.Exec(CREATE_TBL_SERVICE)
 	return err
+}
+
+func InitTables(sqlDB *sql.DB) error {
+	var err error
+	if err = createTableServices(sqlDB); err != nil {
+		return err
+	}
+
+	if err = createTableUsers(sqlDB); err != nil {
+		return err
+	}
+
+	return nil
 }

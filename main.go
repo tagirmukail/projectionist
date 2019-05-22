@@ -8,7 +8,10 @@ import (
 	"log"
 	"net/http"
 	"projectionist/config"
+	"projectionist/consts"
+	"projectionist/controllers"
 	"projectionist/db"
+	"projectionist/utils"
 	"runtime/debug"
 )
 
@@ -26,6 +29,9 @@ func main() {
 		log.Fatalln(err)
 	}
 
+	log.Printf("<<<<<Projectionst>>>>>")
+	log.Printf("Configuration:%+v", cfg)
+
 	var addr = fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
 
 	sqlDB, err := sql.Open("sqlite3", "./db.sqlite")
@@ -34,16 +40,21 @@ func main() {
 	}
 	defer sqlDB.Close()
 
-	if err = db.CreateTableUsers(sqlDB); err != nil {
+	// initialization database tables
+	if err = db.InitTables(sqlDB); err != nil {
 		log.Fatal(err)
 	}
 
-	if err = db.CreateTableServices(sqlDB); err != nil {
+	// create dir for saving configs files
+	if err = utils.CreateDir(consts.PathSaveCfgs); err != nil {
 		log.Fatal(err)
 	}
 
 	router := mux.NewRouter()
 	router.Use()
 
+	router.HandleFunc(consts.UrlNewCfg, controllers.NewCfg())
+
+	log.Printf("Start service on: %v", addr)
 	log.Fatal(http.ListenAndServe(addr, router))
 }

@@ -12,7 +12,7 @@ create table if not exists users
 	deleted  int default 0
 );
 
-create unique index users_username_uindex
+create unique index if not exists users_username_uindex
     on users (username);
 `
 	CREATE_TBL_SERVICE = `
@@ -27,7 +27,7 @@ create table if not exists services
 	deleted int default 0
 );
 
-create unique index services_name_uindex
+create unique index if not exists services_name_uindex
     on services (name);
 `
 )
