@@ -8,6 +8,7 @@ create table if not exists users
 		constraint users_pk
 			primary key autoincrement,
 	username TEXT(255) not null,
+	password TEXT(500) not null,
 	role     int default 0,
 	deleted  int default 0
 );

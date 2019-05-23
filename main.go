@@ -11,6 +11,7 @@ import (
 	"projectionist/consts"
 	"projectionist/controllers"
 	"projectionist/db"
+	"projectionist/middleware"
 	"projectionist/utils"
 	"runtime/debug"
 )
@@ -51,9 +52,10 @@ func main() {
 	}
 
 	router := mux.NewRouter()
-	router.Use()
+	router.Use(middleware.Auth)
 
-	router.HandleFunc(consts.UrlNewCfg, controllers.NewCfg())
+	router.HandleFunc(consts.UrlNewUser, controllers.NewUser(sqlDB)).Methods(http.MethodPost)
+	router.HandleFunc(consts.UrlNewCfg, controllers.NewCfg()).Methods(http.MethodPost)
 
 	log.Printf("Start service on: %v", addr)
 	log.Fatal(http.ListenAndServe(addr, router))
