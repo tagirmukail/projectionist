@@ -81,3 +81,33 @@ func (u *User) Save(db *sql.DB) error {
 
 	return nil
 }
+
+func (u *User) Count(db *sql.DB) (int, error) {
+	var count int
+	var err = db.QueryRow("SELECT count(id) FROM users").Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (u *User) TableNotEmpty(db *sql.DB) (bool, error) {
+	var id int
+	var err = db.QueryRow("SELECT id FROM users").Scan(&id)
+	if err != nil {
+		return false, err
+	}
+
+	return id > 0, nil
+}
+
+func (u *User) GetByName(db *sql.DB, username string) error {
+	return db.QueryRow("SELECT id, username, password, role, deleted FROM users WHERE username=?", username).Scan(
+		&u.ID,
+		&u.Username,
+		&u.Password,
+		&u.Role,
+		&u.Deleted,
+	)
+}
