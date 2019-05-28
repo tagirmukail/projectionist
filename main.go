@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	_ "github.com/mattn/go-sqlite3"
+	"html/template"
 	"log"
 	"net/http"
 	"projectionist/config"
@@ -13,6 +14,7 @@ import (
 	"projectionist/db"
 	"projectionist/middleware"
 	"projectionist/models"
+	"projectionist/session"
 	"projectionist/utils"
 	"runtime/debug"
 )
@@ -58,12 +60,26 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	router := mux.NewRouter()
-	router.Use(middleware.FirstAuth(&usersNotEmpty))
+	sessHandl := session.NewSessionHandler(64, 32)
 
-	router.HandleFunc("/login", controllers.Login(sqlDB)).Methods(http.MethodPost)
+	t := make(map[string]*template.Template)
+	t["login.html"] = template.Must(template.ParseFiles("templates/base.html", "templates/login.html"))
+	t["services-index.html"] = template.Must(
+		template.ParseFiles(
+			"templates/base.html",
+			"templates/services-index.html",
+		),
+	)
+
+	router := mux.NewRouter()
+	router.Use(middleware.FirstAuth(&usersNotEmpty), middleware.LoginRequired(sessHandl))
+
+	router.HandleFunc(consts.UrlApiLogin, controllers.LoginApi(sqlDB)).Methods(http.MethodPost)
 	router.HandleFunc(consts.UrlNewUser, controllers.NewUser(sqlDB, &usersNotEmpty)).Methods(http.MethodPost)
 	router.HandleFunc(consts.UrlNewCfg, controllers.NewCfg()).Methods(http.MethodPost)
+
+	router.HandleFunc("/login", controllers.Login(t["login.html"])).Methods(http.MethodGet)
+	router.HandleFunc("/", controllers.ServicesIndex(t["services-index.html"]))
 
 	log.Printf("Start service on: %v", addr)
 	log.Fatal(http.ListenAndServe(addr, router))

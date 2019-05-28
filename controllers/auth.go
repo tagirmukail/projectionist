@@ -11,7 +11,7 @@ import (
 	"projectionist/utils"
 )
 
-func Login(db *sql.DB) http.HandlerFunc {
+func LoginApi(db *sql.DB) http.HandlerFunc {
 	return http.HandlerFunc(func(resp http.ResponseWriter, r *http.Request) {
 		var form = forms.LoginForm{}
 		var err = json.NewDecoder(r.Body).Decode(&form)
@@ -34,7 +34,7 @@ func Login(db *sql.DB) http.HandlerFunc {
 
 		if err = user.GetByName(db, form.Username); err != nil {
 			var respond = utils.Message(false, "User not exist")
-			log.Printf("Login() error: %v", err)
+			log.Printf("LoginApi() error: %v", err)
 			resp.WriteHeader(http.StatusInternalServerError)
 			utils.Respond(resp, respond)
 			return
@@ -42,12 +42,13 @@ func Login(db *sql.DB) http.HandlerFunc {
 
 		if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(form.Password)); err != nil {
 			var respond = utils.Message(false, "Not authorized")
-			log.Printf("Login() error: %v", err)
+			log.Printf("LoginApi() error: %v", err)
 			resp.WriteHeader(http.StatusUnauthorized)
 			utils.Respond(resp, respond)
+			return
 		}
 
-		var respond = utils.Message(false, "Login successful")
+		var respond = utils.Message(true, "Login successful")
 		user.Password = ""
 		respond["user"] = user
 		utils.Respond(resp, respond)

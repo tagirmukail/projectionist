@@ -18,6 +18,7 @@ func NewCfg() http.HandlerFunc {
 		}
 
 		var configFileName = names[0]
+		configFileName = configFileName + ".json"
 
 		var form = make(map[string]interface{})
 		var err = json.NewDecoder(r.Body).Decode(&form)
@@ -26,7 +27,7 @@ func NewCfg() http.HandlerFunc {
 			utils.Respond(w, utils.Message(false, "Bad input data"))
 			return
 		}
-		var savePath = consts.PathSaveCfgs + "/" + configFileName + ".json"
+		var savePath = consts.PathSaveCfgs + "/" + configFileName
 		err = utils.SaveJsonFile(savePath, form)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -35,7 +36,7 @@ func NewCfg() http.HandlerFunc {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		msg := fmt.Sprintf("File %s.json saved", configFileName)
+		msg := fmt.Sprintf("File %s saved", configFileName)
 		utils.Respond(w, utils.Message(true, msg))
 	})
 }

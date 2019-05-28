@@ -5,27 +5,28 @@ import (
 	"github.com/gorilla/mux"
 	"net/http"
 	"projectionist/consts"
+	"projectionist/session"
 	"strings"
 )
 
-var Auth = func(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		requestPath := r.URL.Path
+var LoginRequired = func(sessionHandler *session.SessionHandler) mux.MiddlewareFunc {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			username := sessionHandler.GetUserName(r)
+			requestPath := r.URL.Path
 
-		authPathParts := []string{"login"}
-		for _, pathPart := range authPathParts {
-			if strings.Contains(requestPath, pathPart) {
-
-				next.ServeHTTP(w, r)
+			switch {
+			case username == "" && !strings.Contains(requestPath, "login"):
+				http.Redirect(w, r, "/login", 301)
 				return
+			case username != "" && strings.Contains(requestPath, "login"):
+				http.Redirect(w, r, "/", 301)
+				return
+			default:
+				next.ServeHTTP(w, r)
 			}
-		}
-
-		//TODO add check login
-		//ctx := context.WithValue(r.Context(), "user", id)
-		//r = r.WithContext(ctx)
-		next.ServeHTTP(w, r)
-	})
+		})
+	}
 }
 
 var FirstAuth = func(usersNotEmpty *bool) mux.MiddlewareFunc {

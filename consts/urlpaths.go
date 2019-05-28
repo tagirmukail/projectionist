@@ -1,25 +1,30 @@
 package consts
 
 const (
-	urlPrefixVersion = "/v1"
-	urlPrefixService = "/service"
-	urlPrefixUser    = "/user"
-	urlPrefixCfg     = "/cfg"
+	urlApiPrefix      = "/api"
+	urlPrefixVersion1 = "/v1"
+	urlPrefixService  = "/service"
+	urlPrefixUser     = "/user"
+	urlPrefixCfg      = "/cfg"
 
+	urlLogin  = "/login"
 	urlNew    = "/new"
 	urlEdit   = "/edit"
 	urlDelete = "/delete"
 	urlGet    = "/get"
 
-	UrlNewService    = urlPrefixVersion + urlPrefixService + urlNew
-	UrlEditService   = urlPrefixVersion + urlPrefixService + urlEdit
-	UrlDeleteService = urlPrefixVersion + urlPrefixService + urlDelete
+	UrlApiLogin = urlPrefixVersion1 + urlApiPrefix + urlLogin
+	UrlLogin    = urlLogin
 
-	UrlNewUser    = urlPrefixVersion + urlPrefixUser + urlNew
-	UrlEditUser   = urlPrefixVersion + urlPrefixUser + urlEdit
-	UrlDeleteUser = urlPrefixVersion + urlPrefixUser + urlDelete
+	UrlNewService    = urlPrefixVersion1 + urlApiPrefix + urlPrefixService + urlNew
+	UrlEditService   = urlPrefixVersion1 + urlApiPrefix + urlPrefixService + urlEdit
+	UrlDeleteService = urlPrefixVersion1 + urlApiPrefix + urlPrefixService + urlDelete
 
-	UrlNewCfg    = urlPrefixVersion + urlPrefixCfg + urlNew
-	UrlEditCfg   = urlPrefixVersion + urlPrefixCfg + urlEdit
-	UrlDeleteCfg = urlPrefixVersion + urlPrefixCfg + urlDelete
+	UrlNewUser    = urlPrefixVersion1 + urlApiPrefix + urlPrefixUser + urlNew
+	UrlEditUser   = urlPrefixVersion1 + urlApiPrefix + urlPrefixUser + urlEdit
+	UrlDeleteUser = urlPrefixVersion1 + urlApiPrefix + urlPrefixUser + urlDelete
+
+	UrlNewCfg    = urlPrefixVersion1 + urlApiPrefix + urlPrefixCfg + urlNew
+	UrlEditCfg   = urlPrefixVersion1 + urlApiPrefix + urlPrefixCfg + urlEdit
+	UrlDeleteCfg = urlPrefixVersion1 + urlApiPrefix + urlPrefixCfg + urlDelete
 )
