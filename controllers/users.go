@@ -9,7 +9,7 @@ import (
 	"projectionist/utils"
 )
 
-func NewUser(sqlDB *sql.DB, usersNotEmpty *bool) http.HandlerFunc {
+func NewUser(sqlDB *sql.DB) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var user = models.User{}
 
@@ -44,10 +44,6 @@ func NewUser(sqlDB *sql.DB, usersNotEmpty *bool) http.HandlerFunc {
 
 		respond := utils.Message(true, "New user created")
 		respond["userID"] = user.ID
-
-		if !*usersNotEmpty {
-			*usersNotEmpty = true
-		}
 
 		utils.Respond(w, respond)
 	})

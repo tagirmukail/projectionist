@@ -92,16 +92,6 @@ func (u *User) Count(db *sql.DB) (int, error) {
 	return count, nil
 }
 
-func (u *User) TableNotEmpty(db *sql.DB) (bool, error) {
-	var id int
-	var err = db.QueryRow("SELECT id FROM users").Scan(&id)
-	if err != nil {
-		return false, err
-	}
-
-	return id > 0, nil
-}
-
 func (u *User) GetByName(db *sql.DB, username string) error {
 	return db.QueryRow("SELECT id, username, password, role, deleted FROM users WHERE username=?", username).Scan(
 		&u.ID,

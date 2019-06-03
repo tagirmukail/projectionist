@@ -18,4 +18,6 @@ config.json
 
 projectionist
 files
+client/frontend
+client/static
 db.sqlite
