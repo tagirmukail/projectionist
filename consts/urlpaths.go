@@ -8,23 +8,14 @@ const (
 	urlPrefixCfg      = "/cfg"
 
 	urlLogin  = "/login"
-	urlNew    = "/new"
-	urlEdit   = "/edit"
-	urlDelete = "/delete"
-	urlGet    = "/get"
+	urlLogout = "/logout"
 
 	UrlApiLogin = urlPrefixVersion1 + urlApiPrefix + urlLogin
 	UrlLogin    = urlLogin
 
-	UrlNewService    = urlPrefixVersion1 + urlApiPrefix + urlPrefixService + urlNew
-	UrlEditService   = urlPrefixVersion1 + urlApiPrefix + urlPrefixService + urlEdit
-	UrlDeleteService = urlPrefixVersion1 + urlApiPrefix + urlPrefixService + urlDelete
+	UrlService = urlPrefixVersion1 + urlApiPrefix + urlPrefixService
 
-	UrlNewUser    = urlPrefixVersion1 + urlApiPrefix + urlPrefixUser + urlNew
-	UrlEditUser   = urlPrefixVersion1 + urlApiPrefix + urlPrefixUser + urlEdit
-	UrlDeleteUser = urlPrefixVersion1 + urlApiPrefix + urlPrefixUser + urlDelete
+	UrlUser = urlPrefixVersion1 + urlApiPrefix + urlPrefixUser
 
-	UrlNewCfg    = urlPrefixVersion1 + urlApiPrefix + urlPrefixCfg + urlNew
-	UrlEditCfg   = urlPrefixVersion1 + urlApiPrefix + urlPrefixCfg + urlEdit
-	UrlDeleteCfg = urlPrefixVersion1 + urlApiPrefix + urlPrefixCfg + urlDelete
+	UrlCfg = urlPrefixVersion1 + urlApiPrefix + urlPrefixCfg
 )

@@ -48,3 +48,27 @@ func NewUser(sqlDB *sql.DB) http.HandlerFunc {
 		utils.Respond(w, respond)
 	})
 }
+
+func GetUser(sqlDB *sql.DB) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		//TODO: implement
+	})
+}
+
+func GetUserList(sqlDB *sql.DB) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		//TODO: implement
+	})
+}
+
+func UpdateUser(sqlDB *sql.DB) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		//TODO: implement
+	})
+}
+
+func DeleteUser(sqlDB *sql.DB) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		//TODO: implement
+	})
+}

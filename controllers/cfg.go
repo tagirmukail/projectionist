@@ -40,3 +40,27 @@ func NewCfg() http.HandlerFunc {
 		utils.Respond(w, utils.Message(true, msg))
 	})
 }
+
+func GetCfg() http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		//TODO: implement
+	})
+}
+
+func GetCfgList() http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		//TODO: implement
+	})
+}
+
+func UpdateCfg() http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		//TODO: implement
+	})
+}
+
+func DeleteCfg() http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		//TODO: implement
+	})
+}

@@ -8,10 +8,11 @@ import (
 	"net/http"
 	"projectionist/forms"
 	"projectionist/models"
+	"projectionist/session"
 	"projectionist/utils"
 )
 
-func LoginApi(db *sql.DB) http.HandlerFunc {
+func LoginApi(db *sql.DB, sessHandler *session.SessionHandler) http.HandlerFunc {
 	return http.HandlerFunc(func(resp http.ResponseWriter, r *http.Request) {
 		var form = forms.LoginForm{}
 		var err = json.NewDecoder(r.Body).Decode(&form)
@@ -51,6 +52,7 @@ func LoginApi(db *sql.DB) http.HandlerFunc {
 		var respond = utils.Message(true, "Login successful")
 		user.Password = ""
 		respond["user"] = user
+		sessHandler.SetSession(user.Username, resp)
 		utils.Respond(resp, respond)
 
 	})
