@@ -8,6 +8,7 @@ import (
 	"projectionist/utils"
 )
 
+//LoginRequired middleware login
 var LoginRequired = func(sessionHandler *session.SessionHandler) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -18,10 +19,6 @@ var LoginRequired = func(sessionHandler *session.SessionHandler) mux.MiddlewareF
 			case username == "" && requestPath != consts.UrlApiLogin:
 				w.WriteHeader(http.StatusUnauthorized)
 				utils.Respond(w, utils.Message(false, "Login required"))
-				return
-			case username != "" && requestPath == consts.UrlApiLogin:
-				w.WriteHeader(http.StatusTeapot)
-				utils.Respond(w, utils.Message(false, "Login complete"))
 				return
 			default:
 				next.ServeHTTP(w, r)

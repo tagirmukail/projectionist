@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"projectionist/provider"
 
 	"github.com/gorilla/mux"
 
@@ -19,26 +20,26 @@ import (
 
 type App struct {
 	cfg         *config.Config
-	db          *sql.DB
+	dbProvider  provider.IDBProvider
 	sessHandler *session.SessionHandler
 }
 
-func NewApp(cfg *config.Config, db *sql.DB) *App {
+func NewApp(cfg *config.Config, sqlDB *sql.DB) (*App, error) {
+	// initialization database tables
+	if err := db.InitTables(sqlDB); err != nil {
+		return nil, err
+	}
+
 	return &App{
 		cfg:         cfg,
-		db:          db,
+		dbProvider:  provider.NewDBProvider(sqlDB),
 		sessHandler: session.NewSessionHandler(64, 32),
-	}
+	}, nil
 }
 
 func (a *App) Run() {
 	var address = fmt.Sprintf("%s:%d", a.cfg.Host, a.cfg.Port)
 	var err error
-
-	// initialization database tables
-	if err = db.InitTables(a.db); err != nil {
-		log.Fatal(err)
-	}
 
 	// create dir for saving configs files
 	if err = utils.CreateDir(consts.PathSaveCfgs); err != nil {
@@ -55,13 +56,13 @@ func (a *App) newRouter() *mux.Router {
 	router := mux.NewRouter()
 	router.Use(middleware.LoginRequired(a.sessHandler))
 
-	router.HandleFunc(consts.UrlApiLogin, controllers.LoginApi(a.db, a.sessHandler)).Methods(http.MethodPost)
+	router.HandleFunc(consts.UrlApiLogin, controllers.LoginApi(a.dbProvider, a.sessHandler)).Methods(http.MethodPost)
 
-	router.HandleFunc(consts.UrlUser, controllers.NewUser(a.db)).Methods(http.MethodPost)
-	router.HandleFunc(consts.UrlUser+"/{id}", controllers.GetUser(a.db)).Methods(http.MethodGet)
-	router.HandleFunc(consts.UrlUser, controllers.GetUserList(a.db)).Methods(http.MethodGet)
-	router.HandleFunc(consts.UrlUser+"/{id}", controllers.UpdateUser(a.db)).Methods(http.MethodPut)
-	router.HandleFunc(consts.UrlUser+"/{id}", controllers.DeleteUser(a.db)).Methods(http.MethodGet)
+	router.HandleFunc(consts.UrlUser, controllers.NewUser(a.dbProvider)).Methods(http.MethodPost)
+	router.HandleFunc(consts.UrlUser+"/{id}", controllers.GetUser(a.dbProvider)).Methods(http.MethodGet)
+	router.HandleFunc(consts.UrlUser, controllers.GetUserList(a.dbProvider)).Methods(http.MethodGet)
+	router.HandleFunc(consts.UrlUser+"/{id}", controllers.UpdateUser(a.dbProvider)).Methods(http.MethodPut)
+	router.HandleFunc(consts.UrlUser+"/{id}", controllers.DeleteUser(a.dbProvider)).Methods(http.MethodGet)
 
 	router.HandleFunc(consts.UrlCfg, controllers.NewCfg()).Methods(http.MethodPost)
 	router.HandleFunc(consts.UrlCfg+"/{id}", controllers.GetCfg()).Methods(http.MethodGet)

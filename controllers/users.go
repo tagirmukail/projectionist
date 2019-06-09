@@ -1,15 +1,15 @@
 package controllers
 
 import (
-	"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
 	"projectionist/models"
+	"projectionist/provider"
 	"projectionist/utils"
 )
 
-func NewUser(sqlDB *sql.DB) http.HandlerFunc {
+func NewUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var user = models.User{}
 
@@ -28,13 +28,13 @@ func NewUser(sqlDB *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		if err, exist := user.IsExist(sqlDB); exist && err == nil {
+		if err, exist := dbProvider.IsExist(&user); exist && err == nil {
 			w.WriteHeader(http.StatusForbidden)
 			utils.Respond(w, utils.Message(false, "user exist"))
 			return
 		}
 
-		err = user.Save(sqlDB)
+		err = dbProvider.Save(&user)
 		if err != nil {
 			log.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -49,25 +49,25 @@ func NewUser(sqlDB *sql.DB) http.HandlerFunc {
 	})
 }
 
-func GetUser(sqlDB *sql.DB) http.HandlerFunc {
+func GetUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		//TODO: implement
 	})
 }
 
-func GetUserList(sqlDB *sql.DB) http.HandlerFunc {
+func GetUserList(dbProvider provider.IDBProvider) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		//TODO: implement
 	})
 }
 
-func UpdateUser(sqlDB *sql.DB) http.HandlerFunc {
+func UpdateUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		//TODO: implement
 	})
 }
 
-func DeleteUser(sqlDB *sql.DB) http.HandlerFunc {
+func DeleteUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		//TODO: implement
 	})

@@ -1,18 +1,18 @@
 package controllers
 
 import (
-	"database/sql"
 	"encoding/json"
 	"golang.org/x/crypto/bcrypt"
 	"log"
 	"net/http"
 	"projectionist/forms"
 	"projectionist/models"
+	"projectionist/provider"
 	"projectionist/session"
 	"projectionist/utils"
 )
 
-func LoginApi(db *sql.DB, sessHandler *session.SessionHandler) http.HandlerFunc {
+func LoginApi(dbProvider provider.IDBProvider, sessHandler *session.SessionHandler) http.HandlerFunc {
 	return http.HandlerFunc(func(resp http.ResponseWriter, r *http.Request) {
 		var form = forms.LoginForm{}
 		var err = json.NewDecoder(r.Body).Decode(&form)
@@ -33,7 +33,7 @@ func LoginApi(db *sql.DB, sessHandler *session.SessionHandler) http.HandlerFunc 
 
 		var user = models.User{}
 
-		if err = user.GetByName(db, form.Username); err != nil {
+		if err = dbProvider.GetByName(&user, form.Username); err != nil {
 			var respond = utils.Message(false, "User not exist")
 			log.Printf("LoginApi() error: %v", err)
 			resp.WriteHeader(http.StatusInternalServerError)

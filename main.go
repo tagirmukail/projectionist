@@ -34,7 +34,10 @@ func main() {
 	}
 	defer sqlDB.Close()
 
-	var application = app.NewApp(cfg, sqlDB)
+	application, err := app.NewApp(cfg, sqlDB)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	application.Run()
 }
