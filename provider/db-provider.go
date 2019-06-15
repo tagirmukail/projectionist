@@ -2,7 +2,6 @@ package provider
 
 import (
 	"database/sql"
-	"fmt"
 	"projectionist/models"
 )
 
@@ -16,29 +15,18 @@ func NewDBProvider(db *sql.DB) *DBProvider {
 	}
 }
 
-func (p *DBProvider) Save(m interface{}) error {
-	var model, ok = m.(models.Model)
-	if !ok {
-		return fmt.Errorf("this interface not model")
-	}
-
-	return model.Save(p.db)
+func (p *DBProvider) Save(m models.Model) error {
+	return m.Save(p.db)
 }
 
-func (p *DBProvider) GetByName(m interface{}, name string) error {
-	model, ok := m.(models.Model)
-	if !ok {
-		return fmt.Errorf("this interface not model")
-	}
-
-	return model.GetByName(p.db, name)
+func (p *DBProvider) GetByName(m models.Model, name string) error {
+	return m.GetByName(p.db, name)
 }
 
-func (p *DBProvider) IsExist(m interface{}) (error, bool) {
-	model, ok := m.(models.Model)
-	if !ok {
-		return fmt.Errorf("this interface not model"), false
-	}
+func (p *DBProvider) GetByID(m models.Model, id int64) error {
+	return m.GetByID(p.db, id)
+}
 
-	return model.IsExist(p.db)
+func (p *DBProvider) IsExist(m models.Model) (error, bool) {
+	return m.IsExist(p.db)
 }

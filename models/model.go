@@ -13,4 +13,5 @@ type Model interface {
 	Count(*sql.DB) (int, error)
 	Save(*sql.DB) error
 	GetByName(*sql.DB, string) error
+	GetByID(*sql.DB, int64) error
 }

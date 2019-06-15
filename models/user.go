@@ -14,7 +14,6 @@ const (
 )
 
 type User struct {
-	Model
 	ID       int    `json:"id";db:"id"`
 	Username string `json:"username";db:"username"`
 	Role     int    `json:"role";db:"role"`
@@ -94,6 +93,16 @@ func (u *User) Count(db *sql.DB) (int, error) {
 
 func (u *User) GetByName(db *sql.DB, username string) error {
 	return db.QueryRow("SELECT id, username, password, role, deleted FROM users WHERE username=?", username).Scan(
+		&u.ID,
+		&u.Username,
+		&u.Password,
+		&u.Role,
+		&u.Deleted,
+	)
+}
+
+func (u *User) GetByID(db *sql.DB, id int64) error {
+	return db.QueryRow("SELECT id, username, password, role, deleted FROM users WHERE id=?", id).Scan(
 		&u.ID,
 		&u.Username,
 		&u.Password,
