@@ -18,6 +18,25 @@ config.json
 
 projectionist
 files
-client/frontend
-client/static
 db.sqlite
+
+# dependencies
+/client/frontent/node_modules
+/client/frontent/.pnp
+/client/frontent/.pnp.js
+# testing
+/client/frontent/coverage
+
+# production
+/client/frontent/build
+
+# misc
+/client/frontent/.DS_Store
+/client/frontent/.env.local
+/client/frontent/.env.development.local
+/client/frontent/.env.test.local
+/client/frontent/.env.production.local
+
+/client/frontent/npm-debug.log*
+/client/frontent/yarn-debug.log*
+/client/frontent/yarn-error.log*
