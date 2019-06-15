@@ -26,3 +26,13 @@ var LoginRequired = func(sessionHandler *session.SessionHandler) mux.MiddlewareF
 		})
 	}
 }
+
+var AccessControllAllows = func() mux.MiddlewareFunc {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Add("Access-Control-Allow-Origin", "*")
+			w.Header().Add("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Cookie")
+			next.ServeHTTP(w, r)
+		})
+	}
+}
