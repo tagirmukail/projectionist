@@ -21,22 +21,22 @@ files
 db.sqlite
 
 # dependencies
-/client/frontent/node_modules
-/client/frontent/.pnp
-/client/frontent/.pnp.js
+client/**/node_modules
+client/**/.pnp
+client/**/.pnp.js
 # testing
-/client/frontent/coverage
+client/**/coverage
 
 # production
-/client/frontent/build
+client/**/build
 
 # misc
-/client/frontent/.DS_Store
-/client/frontent/.env.local
-/client/frontent/.env.development.local
-/client/frontent/.env.test.local
-/client/frontent/.env.production.local
+client/**/.DS_Store
+client/**/.env.local
+client/**/.env.development.local
+client/**/.env.test.local
+client/**/.env.production.local
 
-/client/frontent/npm-debug.log*
-/client/frontent/yarn-debug.log*
-/client/frontent/yarn-error.log*
+client/**/npm-debug.log*
+client/**/yarn-debug.log*
+client/**/yarn-error.log*

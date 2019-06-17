@@ -23,10 +23,10 @@ class LoginForm extends Component {
         });
     };
 
-    handleSubmit = async event => {
+    handleSubmit = event => {
         event.preventDefault();
 
-        try {
+
             let payload = JSON.stringify({
                 "username": this.state.login,
                 "password": this.state.password
@@ -43,16 +43,13 @@ class LoginForm extends Component {
             })
                 .then(results => results.json())
                 .then(response => {
-                        if (!response.status) {
-                            alert(response.message);
-                            return;
-                        }
+                    if (!response.status) {
+                        console.log(response.message);
+                        return;
+                    }
 
-                        this.props.userHasAuthenticated(true);
-            });
-        } catch (e) {
-            alert(e.message);
-        }
+                    this.props.userHasAuthenticated(true);
+                })
     };
 
     render() {

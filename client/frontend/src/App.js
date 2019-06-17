@@ -26,28 +26,23 @@ class App extends Component {
     userHasAuthenticated = authenticated => {
         const {cookies} = this.props;
 
+        let session = (authenticated) ? cookies.get("session"): "";
+        let location  = (authenticated) ? "/": "/login";
+
+        if (!authenticated) {cookies.remove('session');}
+
         this.setState({
             isAuthenticated: authenticated,
-            session: cookies.get("session") || ""
+            session: session || ""
         });
-    };
 
-    userClearAuthenticated = () => {
-        const {cookies} = this.props;
-
-        cookies.remove('session');
-
-      this.setState({
-          isAuthenticated: false,
-          session: ""
-      })
+        document.location = location;
     };
 
     render() {
         const childProps = {
             isAuthenticated: this.state.isAuthenticated,
             userHasAuthenticated: this.userHasAuthenticated,
-            userClearAuthenticated: this.userClearAuthenticated
         };
 
         return (
