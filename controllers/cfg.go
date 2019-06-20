@@ -13,7 +13,7 @@ func NewCfg() http.HandlerFunc {
 		names, ok := r.URL.Query()["name"]
 		if !ok || len(names) == 0 {
 			w.WriteHeader(http.StatusBadRequest)
-			utils.Respond(w, utils.Message(false, "name is empty"))
+			utils.JsonRespond(w, utils.Message(false, "name is empty"))
 			return
 		}
 
@@ -24,20 +24,20 @@ func NewCfg() http.HandlerFunc {
 		var err = json.NewDecoder(r.Body).Decode(&form)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			utils.Respond(w, utils.Message(false, "Bad input data"))
+			utils.JsonRespond(w, utils.Message(false, "Bad input data"))
 			return
 		}
 		var savePath = consts.PathSaveCfgs + "/" + configFileName
 		err = utils.SaveJsonFile(savePath, form)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			utils.Respond(w, utils.Message(false, "File not saved"))
+			utils.JsonRespond(w, utils.Message(false, "File not saved"))
 			return
 		}
 
 		w.WriteHeader(http.StatusOK)
 		msg := fmt.Sprintf("File %s saved", configFileName)
-		utils.Respond(w, utils.Message(true, msg))
+		utils.JsonRespond(w, utils.Message(true, msg))
 	})
 }
 

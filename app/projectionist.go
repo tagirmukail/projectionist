@@ -54,9 +54,9 @@ func (a *App) Run() {
 
 func (a *App) newRouter() *mux.Router {
 	router := mux.NewRouter()
-	router.Use(middleware.LoginRequired(a.sessHandler), middleware.AccessControllAllows())
+	router.Use(middleware.LoginRequired(a.sessHandler), middleware.AccessControllAllows(a.cfg.AccessAddresses))
 
-	router.HandleFunc(consts.UrlApiLogin, controllers.LoginApi(a.dbProvider, a.sessHandler)).Methods(http.MethodPost)
+	router.HandleFunc(consts.UrlApiLogin, controllers.LoginApi(a.dbProvider, a.sessHandler, a.cfg.TokenSecretKey)).Methods(http.MethodPost)
 
 	router.HandleFunc(consts.UrlUser, controllers.NewUser(a.dbProvider)).Methods(http.MethodPost)
 	router.HandleFunc(consts.UrlUser+"/{id}", controllers.GetUser(a.dbProvider)).Methods(http.MethodGet)

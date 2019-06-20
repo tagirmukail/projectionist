@@ -21,20 +21,20 @@ func NewUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 		if err != nil {
 			log.Println(err)
 			w.WriteHeader(http.StatusBadRequest)
-			utils.Respond(w, utils.Message(false, "Bad input fields"))
+			utils.JsonRespond(w, utils.Message(false, "Bad input fields"))
 			return
 		}
 
 		err = user.Validate()
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			utils.Respond(w, utils.Message(false, err.Error()))
+			utils.JsonRespond(w, utils.Message(false, err.Error()))
 			return
 		}
 
 		if err, exist := dbProvider.IsExist(&user); exist && err == nil {
 			w.WriteHeader(http.StatusForbidden)
-			utils.Respond(w, utils.Message(false, "user exist"))
+			utils.JsonRespond(w, utils.Message(false, "user exist"))
 			return
 		}
 
@@ -42,14 +42,14 @@ func NewUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 		if err != nil {
 			log.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)
-			utils.Respond(w, utils.Message(false, "user not saved"))
+			utils.JsonRespond(w, utils.Message(false, "user not saved"))
 			return
 		}
 
 		respond := utils.Message(true, "New user created")
 		respond["userID"] = user.ID
 
-		utils.Respond(w, respond)
+		utils.JsonRespond(w, respond)
 	})
 }
 
@@ -60,14 +60,14 @@ func GetUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 		idStr, ok := params["id"]
 		if !ok {
 			w.WriteHeader(http.StatusBadRequest)
-			utils.Respond(w, utils.Message(false, "id is empty"))
+			utils.JsonRespond(w, utils.Message(false, "id is empty"))
 			return
 		}
 
 		id, err := strconv.Atoi(idStr)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			utils.Respond(w, utils.Message(false, "id is not number"))
+			utils.JsonRespond(w, utils.Message(false, "id is not number"))
 			return
 		}
 
@@ -77,19 +77,19 @@ func GetUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 		if err != nil {
 			if err == sqlite3.ErrNotFound || err == sql.ErrNoRows {
 				w.WriteHeader(http.StatusNotFound)
-				utils.Respond(w, utils.Message(false, "user not exist"))
+				utils.JsonRespond(w, utils.Message(false, "user not exist"))
 				return
 			}
 			log.Printf("GetUser() error: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
-			utils.Respond(w, utils.Message(false, "server not "))
+			utils.JsonRespond(w, utils.Message(false, "server not "))
 			return
 		}
 
 		user.Password = ""
 		var respond = utils.Message(true, "")
 		respond["user"] = user
-		utils.Respond(w, respond)
+		utils.JsonRespond(w, respond)
 	})
 }
 
