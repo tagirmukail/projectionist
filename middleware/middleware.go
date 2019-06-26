@@ -6,29 +6,9 @@ import (
 	"net/http"
 	"projectionist/consts"
 	"projectionist/models"
-	"projectionist/session"
 	"projectionist/utils"
 	"strings"
 )
-
-//LoginRequired middleware login
-var LoginRequired = func(sessionHandler *session.SessionHandler) mux.MiddlewareFunc {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			username := sessionHandler.GetUserName(r)
-			requestPath := r.URL.Path
-
-			switch {
-			case username == "" && requestPath != consts.UrlApiLogin:
-				w.WriteHeader(http.StatusUnauthorized)
-				utils.JsonRespond(w, utils.Message(false, "Login required"))
-				return
-			default:
-				next.ServeHTTP(w, r)
-			}
-		})
-	}
-}
 
 var AccessControllAllows = func(accessAddresses []string) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
@@ -59,6 +39,7 @@ var JwtAuthentication = func(tokenSecretKey string) mux.MiddlewareFunc {
 			var requestPath = r.URL.Path
 			if requestPath == consts.UrlApiLogin {
 				next.ServeHTTP(w, r)
+				return
 			}
 
 			var response = make(map[string]interface{})
@@ -99,6 +80,8 @@ var JwtAuthentication = func(tokenSecretKey string) mux.MiddlewareFunc {
 				utils.JsonRespond(w, response)
 				return
 			}
+
+			next.ServeHTTP(w, r)
 		})
 	}
 }

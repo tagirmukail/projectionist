@@ -55,7 +55,6 @@ func NewUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 
 func GetUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//TODO: implement
 		var params = mux.Vars(r)
 		idStr, ok := params["id"]
 		if !ok {

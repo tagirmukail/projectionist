@@ -9,13 +9,11 @@ import (
 	"projectionist/forms"
 	"projectionist/models"
 	"projectionist/provider"
-	"projectionist/session"
 	"projectionist/utils"
 )
 
 func LoginApi(
 	dbProvider provider.IDBProvider,
-	sessHandler *session.SessionHandler,
 	tokenSecretKey string,
 ) http.HandlerFunc {
 	return http.HandlerFunc(func(resp http.ResponseWriter, r *http.Request) {
@@ -70,7 +68,6 @@ func LoginApi(
 		user.Password = ""
 		user.Token = tokenStr
 		respond["user"] = user
-		sessHandler.SetSession(user.Username, resp)
 		utils.JsonRespond(resp, respond)
 
 	})

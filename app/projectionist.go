@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"projectionist/provider"
 
 	"github.com/gorilla/mux"
 
@@ -14,14 +13,13 @@ import (
 	"projectionist/controllers"
 	"projectionist/db"
 	"projectionist/middleware"
-	"projectionist/session"
+	"projectionist/provider"
 	"projectionist/utils"
 )
 
 type App struct {
-	cfg         *config.Config
-	dbProvider  provider.IDBProvider
-	sessHandler *session.SessionHandler
+	cfg        *config.Config
+	dbProvider provider.IDBProvider
 }
 
 func NewApp(cfg *config.Config, sqlDB *sql.DB) (*App, error) {
@@ -31,9 +29,8 @@ func NewApp(cfg *config.Config, sqlDB *sql.DB) (*App, error) {
 	}
 
 	return &App{
-		cfg:         cfg,
-		dbProvider:  provider.NewDBProvider(sqlDB),
-		sessHandler: session.NewSessionHandler(64, 32),
+		cfg:        cfg,
+		dbProvider: provider.NewDBProvider(sqlDB),
 	}, nil
 }
 
@@ -54,9 +51,12 @@ func (a *App) Run() {
 
 func (a *App) newRouter() *mux.Router {
 	router := mux.NewRouter()
-	router.Use(middleware.LoginRequired(a.sessHandler), middleware.AccessControllAllows(a.cfg.AccessAddresses))
+	router.Use(
+		middleware.JwtAuthentication(a.cfg.TokenSecretKey),
+		middleware.AccessControllAllows(a.cfg.AccessAddresses),
+	)
 
-	router.HandleFunc(consts.UrlApiLogin, controllers.LoginApi(a.dbProvider, a.sessHandler, a.cfg.TokenSecretKey)).Methods(http.MethodPost)
+	router.HandleFunc(consts.UrlApiLogin, controllers.LoginApi(a.dbProvider, a.cfg.TokenSecretKey)).Methods(http.MethodPost)
 
 	router.HandleFunc(consts.UrlUser, controllers.NewUser(a.dbProvider)).Methods(http.MethodPost)
 	router.HandleFunc(consts.UrlUser+"/{id}", controllers.GetUser(a.dbProvider)).Methods(http.MethodGet)
