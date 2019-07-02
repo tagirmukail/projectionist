@@ -14,4 +14,5 @@ type Model interface {
 	Save(*sql.DB) error
 	GetByName(*sql.DB, string) error
 	GetByID(*sql.DB, int64) error
+	Pagination(*sql.DB, int, int) ([]Model, error)
 }

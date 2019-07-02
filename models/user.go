@@ -111,3 +111,25 @@ func (u *User) GetByID(db *sql.DB, id int64) error {
 		&u.Deleted,
 	)
 }
+
+func (u *User) Pagination(db *sql.DB, start, end int) ([]Model, error) {
+	var result []Model
+
+	raws, err := db.Query("SELECT id, username, role, deleted FROM users ORDER BY id ASC limit ?, ?", start, end)
+	if err != nil {
+		return result, err
+	}
+
+	for raws.Next() {
+		var user = &User{}
+
+		err = raws.Scan(&user.ID, &user.Username, &user.Role, &user.Deleted)
+		if err != nil {
+			return result, err
+		}
+
+		result = append(result, user)
+	}
+
+	return result, nil
+}

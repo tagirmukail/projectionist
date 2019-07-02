@@ -7,4 +7,6 @@ type IDBProvider interface {
 	GetByID(models.Model, int64) error
 	GetByName(models.Model, string) error
 	IsExist(models.Model) (error, bool)
+	Count(models.Model) (int, error)
+	Pagination(models.Model, int, int) ([]models.Model, error)
 }

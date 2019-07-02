@@ -43,3 +43,9 @@ func SaveJsonFile(path string, form map[string]interface{}) error {
 	_, err = f.Write(data)
 	return err
 }
+
+func Pagination(page, count int) (start, end int) {
+	start = (page - 1) * count
+	end = start + count
+	return start, end
+}

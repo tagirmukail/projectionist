@@ -30,3 +30,11 @@ func (p *DBProvider) GetByID(m models.Model, id int64) error {
 func (p *DBProvider) IsExist(m models.Model) (error, bool) {
 	return m.IsExist(p.db)
 }
+
+func (p *DBProvider) Count(m models.Model) (int, error) {
+	return m.Count(p.db)
+}
+
+func (p *DBProvider) Pagination(m models.Model, start, stop int) ([]models.Model, error) {
+	return m.Pagination(p.db, start, stop)
+}
