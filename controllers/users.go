@@ -166,9 +166,24 @@ func GetUserList(dbProvider provider.IDBProvider) http.HandlerFunc {
 
 func UpdateUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var params = mux.Vars(r)
+		idStr, ok := params["id"]
+		if !ok {
+			w.WriteHeader(http.StatusBadRequest)
+			utils.JsonRespond(w, utils.Message(false, "id is empty"))
+			return
+		}
+
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			utils.JsonRespond(w, utils.Message(false, "id is not number"))
+			return
+		}
+
 		var user = models.User{}
 
-		err := json.NewDecoder(r.Body).Decode(&user)
+		err = json.NewDecoder(r.Body).Decode(&user)
 		if err != nil {
 			log.Println(err)
 			w.WriteHeader(http.StatusBadRequest)
@@ -182,7 +197,7 @@ func UpdateUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 			return
 		}
 
-		err = dbProvider.Update(&user)
+		err = dbProvider.Update(&user, id)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			utils.JsonRespond(w, utils.Message(false, "user not updated"))

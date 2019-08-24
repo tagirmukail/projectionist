@@ -9,6 +9,6 @@ type IDBProvider interface {
 	IsExist(models.Model) (error, bool)
 	Count(models.Model) (int, error)
 	Pagination(models.Model, int, int) ([]models.Model, error)
-	Update(models.Model) error
+	Update(models.Model, int) error
 	Delete(models.Model, int) error
 }

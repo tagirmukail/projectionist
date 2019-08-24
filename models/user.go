@@ -134,7 +134,7 @@ func (u *User) Pagination(db *sql.DB, start, end int) ([]Model, error) {
 	return result, nil
 }
 
-func (u *User) Update(db *sql.DB) error {
+func (u *User) Update(db *sql.DB, id int) error {
 	query := "UPDATE users SET "
 
 	if u.Username != "" {
@@ -143,7 +143,7 @@ func (u *User) Update(db *sql.DB) error {
 
 	query += fmt.Sprintf("role=%d ", u.Role)
 
-	query += fmt.Sprintf("WHERE id=%d", u.ID)
+	query += fmt.Sprintf("WHERE id=%d", id)
 
 	_, err := db.Exec(
 		query,

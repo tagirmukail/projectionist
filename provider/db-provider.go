@@ -39,8 +39,8 @@ func (p *DBProvider) Pagination(m models.Model, start, stop int) ([]models.Model
 	return m.Pagination(p.db, start, stop)
 }
 
-func (p *DBProvider) Update(m models.Model) error {
-	return m.Update(p.db)
+func (p *DBProvider) Update(m models.Model, id int) error {
+	return m.Update(p.db, id)
 }
 
 func (p *DBProvider) Delete(m models.Model, id int) error {
