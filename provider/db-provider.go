@@ -38,3 +38,11 @@ func (p *DBProvider) Count(m models.Model) (int, error) {
 func (p *DBProvider) Pagination(m models.Model, start, stop int) ([]models.Model, error) {
 	return m.Pagination(p.db, start, stop)
 }
+
+func (p *DBProvider) Update(m models.Model) error {
+	return m.Update(p.db)
+}
+
+func (p *DBProvider) Delete(m models.Model, id int) error {
+	return m.Delete(p.db, id)
+}

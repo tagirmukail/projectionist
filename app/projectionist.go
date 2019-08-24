@@ -56,25 +56,25 @@ func (a *App) newRouter() *mux.Router {
 		middleware.AccessControllAllows(a.cfg.AccessAddresses),
 	)
 
-	router.HandleFunc(consts.UrlApiLogin, controllers.LoginApi(a.dbProvider, a.cfg.TokenSecretKey)).Methods(http.MethodPost)
+	router.HandleFunc(consts.UrlApiLoginV1, controllers.LoginApi(a.dbProvider, a.cfg.TokenSecretKey)).Methods(http.MethodPost)
 
-	router.HandleFunc(consts.UrlUser, controllers.NewUser(a.dbProvider)).Methods(http.MethodPost)
-	router.HandleFunc(consts.UrlUser+"/{id}", controllers.GetUser(a.dbProvider)).Methods(http.MethodGet)
-	router.HandleFunc(consts.UrlUser, controllers.GetUserList(a.dbProvider)).Methods(http.MethodGet)
-	router.HandleFunc(consts.UrlUser+"/{id}", controllers.UpdateUser(a.dbProvider)).Methods(http.MethodPut)
-	router.HandleFunc(consts.UrlUser+"/{id}", controllers.DeleteUser(a.dbProvider)).Methods(http.MethodGet)
+	router.HandleFunc(consts.UrlUserV1, controllers.NewUser(a.dbProvider)).Methods(http.MethodPost)
+	router.HandleFunc(consts.UrlUserV1+"/{id}", controllers.GetUser(a.dbProvider)).Methods(http.MethodGet)
+	router.HandleFunc(consts.UrlUserV1, controllers.GetUserList(a.dbProvider)).Methods(http.MethodGet)
+	router.HandleFunc(consts.UrlUserV1+"/{id}", controllers.UpdateUser(a.dbProvider)).Methods(http.MethodPut)
+	router.HandleFunc(consts.UrlUserV1+"/{id}", controllers.DeleteUser(a.dbProvider)).Methods(http.MethodGet)
 
-	router.HandleFunc(consts.UrlCfg, controllers.NewCfg()).Methods(http.MethodPost)
-	router.HandleFunc(consts.UrlCfg+"/{id}", controllers.GetCfg()).Methods(http.MethodGet)
-	router.HandleFunc(consts.UrlCfg, controllers.GetCfgList()).Methods(http.MethodPost)
-	router.HandleFunc(consts.UrlCfg+"/{id}", controllers.UpdateCfg()).Methods(http.MethodPut)
-	router.HandleFunc(consts.UrlCfg+"/{id}", controllers.DeleteCfg()).Methods(http.MethodDelete)
+	router.HandleFunc(consts.UrlCfgV1, controllers.NewCfg()).Methods(http.MethodPost)
+	router.HandleFunc(consts.UrlCfgV1+"/{id}", controllers.GetCfg()).Methods(http.MethodGet)
+	router.HandleFunc(consts.UrlCfgV1, controllers.GetCfgList()).Methods(http.MethodPost)
+	router.HandleFunc(consts.UrlCfgV1+"/{id}", controllers.UpdateCfg()).Methods(http.MethodPut)
+	router.HandleFunc(consts.UrlCfgV1+"/{id}", controllers.DeleteCfg()).Methods(http.MethodDelete)
 
-	router.HandleFunc(consts.UrlService, controllers.NewService()).Methods(http.MethodPost)
-	router.HandleFunc(consts.UrlService+"/{id}", controllers.GetService()).Methods(http.MethodGet)
-	router.HandleFunc(consts.UrlService, controllers.GetServiceList()).Methods(http.MethodGet)
-	router.HandleFunc(consts.UrlService+"/{id}", controllers.UpdateService()).Methods(http.MethodPut)
-	router.HandleFunc(consts.UrlService+"/{id}", controllers.DeleteService()).Methods(http.MethodDelete)
+	router.HandleFunc(consts.UrlServiceV1, controllers.NewService()).Methods(http.MethodPost)
+	router.HandleFunc(consts.UrlServiceV1+"/{id}", controllers.GetService()).Methods(http.MethodGet)
+	router.HandleFunc(consts.UrlServiceV1, controllers.GetServiceList()).Methods(http.MethodGet)
+	router.HandleFunc(consts.UrlServiceV1+"/{id}", controllers.UpdateService()).Methods(http.MethodPut)
+	router.HandleFunc(consts.UrlServiceV1+"/{id}", controllers.DeleteService()).Methods(http.MethodDelete)
 
 	return router
 }

@@ -13,6 +13,8 @@ import (
 	"strconv"
 )
 
+//TODO: add tests for all user controllers
+
 func NewUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var user = models.User{}
@@ -164,12 +166,55 @@ func GetUserList(dbProvider provider.IDBProvider) http.HandlerFunc {
 
 func UpdateUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//TODO: implement
+		var user = models.User{}
+
+		err := json.NewDecoder(r.Body).Decode(&user)
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
+			utils.JsonRespond(w, utils.Message(false, "Bad input fields"))
+			return
+		}
+
+		if err, exist := dbProvider.IsExist(&user); !exist || err != nil {
+			w.WriteHeader(http.StatusForbidden)
+			utils.JsonRespond(w, utils.Message(false, "user not exist"))
+			return
+		}
+
+		err = dbProvider.Update(&user)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			utils.JsonRespond(w, utils.Message(false, "user not updated"))
+			return
+		}
 	})
 }
 
 func DeleteUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//TODO: implement
+		var params = mux.Vars(r)
+		idStr, ok := params["id"]
+		if !ok {
+			w.WriteHeader(http.StatusBadRequest)
+			utils.JsonRespond(w, utils.Message(false, "id is empty"))
+			return
+		}
+
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			utils.JsonRespond(w, utils.Message(false, "id is not number"))
+			return
+		}
+
+		var user = &models.User{}
+
+		err = dbProvider.Delete(user, id)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			utils.JsonRespond(w, utils.Message(false, "user not deleted"))
+			return
+		}
 	})
 }

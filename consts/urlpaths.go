@@ -10,12 +10,12 @@ const (
 	urlLogin  = "/login"
 	urlLogout = "/logout"
 
-	UrlApiLogin = urlPrefixVersion1 + urlApiPrefix + urlLogin
-	UrlLogin    = urlLogin
+	UrlApiLoginV1 = urlPrefixVersion1 + urlApiPrefix + urlLogin
+	UrlLogin      = urlLogin
 
-	UrlService = urlPrefixVersion1 + urlApiPrefix + urlPrefixService
+	UrlServiceV1 = urlPrefixVersion1 + urlApiPrefix + urlPrefixService
 
-	UrlUser = urlPrefixVersion1 + urlApiPrefix + urlPrefixUser
+	UrlUserV1 = urlPrefixVersion1 + urlApiPrefix + urlPrefixUser
 
-	UrlCfg = urlPrefixVersion1 + urlApiPrefix + urlPrefixCfg
+	UrlCfgV1 = urlPrefixVersion1 + urlApiPrefix + urlPrefixCfg
 )

@@ -37,7 +37,7 @@ var JwtAuthentication = func(tokenSecretKey string) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			var requestPath = r.URL.Path
-			if requestPath == consts.UrlApiLogin {
+			if requestPath == consts.UrlApiLoginV1 {
 				next.ServeHTTP(w, r)
 				return
 			}
