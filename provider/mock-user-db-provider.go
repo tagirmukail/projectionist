@@ -17,12 +17,22 @@ func NewMockUsersDBProvider(users map[int]models.Model) *MockUsersDBProvider {
 }
 
 func (m *MockUsersDBProvider) Save(model models.Model) error {
+	var maxID int
+
+	for id := range m.users {
+		if id > maxID {
+			maxID = id
+		}
+	}
+
 	user, ok := model.(*models.User)
 	if !ok {
 		return fmt.Errorf("model %v not user", model)
 	}
 
-	m.users[user.ID] = model
+	user.ID = maxID + 1
+
+	m.users[user.ID] = user
 
 	return nil
 }
@@ -49,12 +59,15 @@ func (m *MockUsersDBProvider) GetByName(model models.Model, name string) error {
 }
 
 func (m *MockUsersDBProvider) IsExist(model models.Model) (error, bool) {
-	user := model.(*models.User)
-	_, ok := m.users[user.ID]
-	if !ok {
-		return fmt.Errorf("model id: %d not exist", user.ID), false
+	userModel := model.(*models.User)
+	for _, user := range m.users {
+		existUser := user.(*models.User)
+		if userModel.Username == existUser.Username {
+			return nil, true
+		}
 	}
-	return nil, true
+
+	return nil, false
 }
 
 func (m *MockUsersDBProvider) Count(model models.Model) (int, error) {

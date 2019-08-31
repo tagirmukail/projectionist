@@ -23,10 +23,10 @@ type User struct {
 }
 
 func (u *User) Validate() error {
-	if u.Username == "" && len(u.Username) > 255 {
+	if u.Username == "" || len(u.Username) > 255 {
 		return fmt.Errorf("Invalid username")
 	}
-	if u.Password == "" && len(u.Password) > 500 {
+	if u.Password == "" || len(u.Password) > 500 {
 		return fmt.Errorf("Invalid password")
 	}
 
