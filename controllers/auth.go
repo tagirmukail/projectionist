@@ -67,7 +67,7 @@ func LoginApi(
 		respond = utils.Message(true, "Login successful")
 		user.Password = ""
 		user.Token = tokenStr
-		respond["user"] = user
+		respond["userID"] = user
 		utils.JsonRespond(resp, respond)
 
 	})

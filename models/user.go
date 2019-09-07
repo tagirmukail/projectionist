@@ -42,7 +42,7 @@ func (u *User) Validate() error {
 	return nil
 }
 
-func (u *User) IsExist(db *sql.DB) (error, bool) {
+func (u *User) IsExistByName(db *sql.DB) (error, bool) {
 	var username string
 	var err = db.QueryRow("SELECT username FROM users where username=?", u.Username).Scan(&username)
 	if err != nil && err != sql.ErrNoRows {

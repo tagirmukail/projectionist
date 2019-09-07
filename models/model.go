@@ -9,7 +9,7 @@ const (
 
 type Model interface {
 	Validate() error
-	IsExist(*sql.DB) (error, bool)
+	IsExistByName(*sql.DB) (error, bool)
 	Count(*sql.DB) (int, error)
 	Save(*sql.DB) error
 	GetByName(*sql.DB, string) error

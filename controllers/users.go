@@ -35,7 +35,7 @@ func NewUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 			return
 		}
 
-		err, exist := dbProvider.IsExist(&user)
+		err, exist := dbProvider.IsExistByName(&user)
 		if exist && err == nil {
 			w.WriteHeader(http.StatusForbidden)
 			utils.JsonRespond(w, utils.Message(false, "User exist"))
@@ -81,9 +81,9 @@ func GetUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 			return
 		}
 
-		var user = models.User{}
+		var userModel models.Model
 
-		err = dbProvider.GetByID(&user, int64(id))
+		userModel, err = dbProvider.GetByID(userModel, int64(id))
 		if err != nil {
 			if err == sql.ErrNoRows {
 				w.WriteHeader(http.StatusNotFound)
@@ -92,7 +92,14 @@ func GetUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 			}
 			log.Printf("GetUser() error: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
-			utils.JsonRespond(w, utils.Message(false, "server not "))
+			utils.JsonRespond(w, utils.Message(false, "something went wrong"))
+			return
+		}
+
+		user, ok := userModel.(*models.User)
+		if !ok {
+			w.WriteHeader(http.StatusNotFound)
+			utils.JsonRespond(w, utils.Message(false, "user not exist"))
 			return
 		}
 
@@ -105,8 +112,6 @@ func GetUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 
 func GetUserList(dbProvider provider.IDBProvider) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var result []models.User
-
 		pageStr := r.URL.Query().Get(consts.PAGE_PARAM)
 		countStr := r.URL.Query().Get(consts.COUNT_PARAM)
 		if pageStr == "" || countStr == "" {
@@ -125,7 +130,6 @@ func GetUserList(dbProvider provider.IDBProvider) http.HandlerFunc {
 		if page <= 0 {
 			w.WriteHeader(http.StatusOK)
 			respond := utils.Message(true, "")
-			respond[consts.KEY_USERS] = result
 			utils.JsonRespond(w, respond)
 			return
 		}
@@ -150,7 +154,6 @@ func GetUserList(dbProvider provider.IDBProvider) http.HandlerFunc {
 		if start > countAllUsers {
 			w.WriteHeader(http.StatusOK)
 			respond := utils.Message(true, "")
-			respond[consts.KEY_USERS] = result
 			utils.JsonRespond(w, respond)
 			return
 		}
@@ -194,15 +197,22 @@ func UpdateUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 
 		err = json.NewDecoder(r.Body).Decode(&user)
 		if err != nil {
-			log.Println(err)
+			log.Printf("UpdateUser() error: %v", err)
 			w.WriteHeader(http.StatusBadRequest)
-			utils.JsonRespond(w, utils.Message(false, "Bad input fields"))
+			utils.JsonRespond(w, utils.Message(false, "bad input fields"))
 			return
 		}
 
-		if err, exist := dbProvider.IsExist(&user); !exist || err != nil {
+		err, exist := dbProvider.IsExistByName(&user)
+		if !exist {
 			w.WriteHeader(http.StatusForbidden)
 			utils.JsonRespond(w, utils.Message(false, "user not exist"))
+			return
+		}
+
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			utils.JsonRespond(w, utils.Message(false, "something went wrong"))
 			return
 		}
 
@@ -212,6 +222,12 @@ func UpdateUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 			utils.JsonRespond(w, utils.Message(false, "user not updated"))
 			return
 		}
+
+		w.WriteHeader(http.StatusOK)
+		var respond = utils.Message(true, "user updated")
+		respond["user"] = user
+		utils.JsonRespond(w, respond)
+		return
 	})
 }
 
@@ -240,5 +256,10 @@ func DeleteUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 			utils.JsonRespond(w, utils.Message(false, "user not deleted"))
 			return
 		}
+
+		w.WriteHeader(http.StatusOK)
+		var respond = utils.Message(true, "user deleted")
+		utils.JsonRespond(w, respond)
+		return
 	})
 }

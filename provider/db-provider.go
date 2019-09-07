@@ -23,12 +23,12 @@ func (p *DBProvider) GetByName(m models.Model, name string) error {
 	return m.GetByName(p.db, name)
 }
 
-func (p *DBProvider) GetByID(m models.Model, id int64) error {
-	return m.GetByID(p.db, id)
+func (p *DBProvider) GetByID(m models.Model, id int64) (models.Model, error) {
+	return m, m.GetByID(p.db, id)
 }
 
-func (p *DBProvider) IsExist(m models.Model) (error, bool) {
-	return m.IsExist(p.db)
+func (p *DBProvider) IsExistByName(m models.Model) (error, bool) {
+	return m.IsExistByName(p.db)
 }
 
 func (p *DBProvider) Count(m models.Model) (int, error) {

@@ -37,9 +37,10 @@ func (m *MockUsersDBProvider) Save(model models.Model) error {
 	return nil
 }
 
-func (m *MockUsersDBProvider) GetByID(model models.Model, id int64) error {
-	model = m.users[int(id)]
-	return nil
+func (m *MockUsersDBProvider) GetByID(model models.Model, id int64) (models.Model, error) {
+	existModel := m.users[int(id)]
+
+	return existModel, nil
 }
 
 func (m *MockUsersDBProvider) GetByName(model models.Model, name string) error {
@@ -58,8 +59,9 @@ func (m *MockUsersDBProvider) GetByName(model models.Model, name string) error {
 	return fmt.Errorf("model with name %s not exist", name)
 }
 
-func (m *MockUsersDBProvider) IsExist(model models.Model) (error, bool) {
+func (m *MockUsersDBProvider) IsExistByName(model models.Model) (error, bool) {
 	userModel := model.(*models.User)
+
 	for _, user := range m.users {
 		existUser := user.(*models.User)
 		if userModel.Username == existUser.Username {
@@ -89,12 +91,12 @@ func (m *MockUsersDBProvider) Pagination(model models.Model, start, stop int) ([
 		users = append(users, user)
 	}
 
-	sort.Slice(&users, func(i, j int) bool {
-		return users[i].ID > users[j].ID
+	sort.Slice(users, func(i, j int) bool {
+		return users[i].ID < users[j].ID
 	})
 
 	for i, user := range users {
-		if i+1 >= start && i+1 < stop {
+		if i >= start && i < stop {
 			result = append(result, user)
 		}
 	}
@@ -109,6 +111,12 @@ func (m *MockUsersDBProvider) Update(model models.Model, id int) error {
 }
 
 func (m *MockUsersDBProvider) Delete(model models.Model, id int) error {
-	delete(m.users, id)
-	return nil
+	for userID, _ := range m.users {
+		if userID == id {
+			delete(m.users, id)
+			return nil
+		}
+	}
+
+	return fmt.Errorf("not exist")
 }
