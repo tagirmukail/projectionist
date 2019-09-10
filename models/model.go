@@ -1,20 +1,23 @@
 package models
 
-import "database/sql"
-
 const (
 	NotDeleted int = iota
 	Deleted
 )
 
 type Model interface {
+	SetDBCtx(interface{}) error
 	Validate() error
-	IsExistByName(*sql.DB) (error, bool)
-	Count(*sql.DB) (int, error)
-	Save(*sql.DB) error
-	GetByName(*sql.DB, string) error
-	GetByID(*sql.DB, int64) error
-	Pagination(*sql.DB, int, int) ([]Model, error)
-	Update(*sql.DB, int) error
-	Delete(*sql.DB, int) error
+	IsExistByName() (error, bool)
+	Count() (int, error)
+	Save() error
+	GetByName(string) error
+	GetByID(int64) error
+	Pagination(int, int) ([]Model, error)
+	Update(int) error
+	Delete(int) error
+	GetID() int
+	SetID(int)
+	GetName() string
+	SetDeleted()
 }

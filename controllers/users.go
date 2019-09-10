@@ -13,8 +13,6 @@ import (
 	"strconv"
 )
 
-//TODO: add tests for all user controllers
-
 func NewUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var user = models.User{}

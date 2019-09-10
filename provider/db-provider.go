@@ -16,33 +16,73 @@ func NewDBProvider(db *sql.DB) *DBProvider {
 }
 
 func (p *DBProvider) Save(m models.Model) error {
-	return m.Save(p.db)
+	err := m.SetDBCtx(p.db)
+	if err != nil {
+		return err
+	}
+
+	return m.Save()
 }
 
 func (p *DBProvider) GetByName(m models.Model, name string) error {
-	return m.GetByName(p.db, name)
+	err := m.SetDBCtx(p.db)
+	if err != nil {
+		return err
+	}
+
+	return m.GetByName(name)
 }
 
 func (p *DBProvider) GetByID(m models.Model, id int64) (models.Model, error) {
-	return m, m.GetByID(p.db, id)
+	err := m.SetDBCtx(p.db)
+	if err != nil {
+		return nil, err
+	}
+
+	return m, m.GetByID(id)
 }
 
 func (p *DBProvider) IsExistByName(m models.Model) (error, bool) {
-	return m.IsExistByName(p.db)
+	err := m.SetDBCtx(p.db)
+	if err != nil {
+		return err, false
+	}
+
+	return m.IsExistByName()
 }
 
 func (p *DBProvider) Count(m models.Model) (int, error) {
-	return m.Count(p.db)
+	err := m.SetDBCtx(p.db)
+	if err != nil {
+		return 0, err
+	}
+
+	return m.Count()
 }
 
 func (p *DBProvider) Pagination(m models.Model, start, stop int) ([]models.Model, error) {
-	return m.Pagination(p.db, start, stop)
+	err := m.SetDBCtx(p.db)
+	if err != nil {
+		return nil, err
+	}
+
+	return m.Pagination(start, stop)
 }
 
 func (p *DBProvider) Update(m models.Model, id int) error {
-	return m.Update(p.db, id)
+	err := m.SetDBCtx(p.db)
+	if err != nil {
+		return err
+	}
+
+	return m.Update(id)
 }
 
 func (p *DBProvider) Delete(m models.Model, id int) error {
-	return m.Delete(p.db, id)
+	err := m.SetDBCtx(p.db)
+	if err != nil {
+		return err
+	}
+
+	return m.Delete(id)
 }
