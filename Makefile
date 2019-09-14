@@ -10,8 +10,11 @@ BINARY_UNIX=$(BINARY_NAME)_unix
 build:
 	$(GOBUILD) -o $(BINARY_NAME) -v
 
-test:
+test-verbose-cover:
 	$(GOTEST) -v -cover ./...
+
+test-cover:
+	$(GOTEST) -cover ./...
 
 clean:
 	$(GOCLEAN)
