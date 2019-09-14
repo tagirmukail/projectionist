@@ -98,7 +98,7 @@ func GetCfg(provider provider.IDBProvider) http.HandlerFunc {
 		}
 
 		var respond = utils.Message(true, "")
-		respond["cfg"] = cfg
+		respond["config"] = cfg
 		utils.JsonRespond(w, respond)
 	})
 }
@@ -210,6 +210,11 @@ func UpdateCfg(provider provider.IDBProvider) http.HandlerFunc {
 
 		err = provider.Update(&cfg, id)
 		if err != nil {
+			if err == consts.ErrNotFound {
+				w.WriteHeader(http.StatusNotFound)
+				utils.JsonRespond(w, utils.Message(false, consts.NotExistResp))
+				return
+			}
 			w.WriteHeader(http.StatusInternalServerError)
 			utils.JsonRespond(w, utils.Message(false, consts.NotUpdatedResp))
 			return
@@ -240,6 +245,11 @@ func DeleteCfg(provider provider.IDBProvider) http.HandlerFunc {
 		var cfg = &models.Configuration{}
 		err = provider.Delete(cfg, id)
 		if err != nil {
+			if err == consts.ErrNotFound {
+				w.WriteHeader(http.StatusNotFound)
+				utils.JsonRespond(w, utils.Message(false, consts.NotExistResp))
+				return
+			}
 			w.WriteHeader(http.StatusInternalServerError)
 			utils.JsonRespond(w, utils.Message(false, consts.NotDeletedResp))
 			return

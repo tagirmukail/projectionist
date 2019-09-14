@@ -94,7 +94,7 @@ func (c *CfgProvider) GetByName(m models.Model, name string) error {
 func (c *CfgProvider) GetByID(m models.Model, id int64) (models.Model, error) {
 	c.RLock()
 	for _, model := range c.configs {
-		if m.GetID() == model.GetID() {
+		if id == int64(model.GetID()) {
 			c.RUnlock()
 			return model, nil
 		}
@@ -138,8 +138,19 @@ func (c *CfgProvider) Pagination(m models.Model, start, stop int) ([]models.Mode
 		start = 0
 	}
 
+	var maxResultCount = stop - start
+
 	c.RLock()
-	for i := start; i <= stop; i++ {
+	for i := 0; i < len(c.configs); i++ {
+		var count = len(result)
+		if count >= maxResultCount {
+			break
+		}
+
+		if c.configs[i].IsDeleted() {
+			continue
+		}
+
 		result = append(result, c.configs[i])
 	}
 	c.RUnlock()

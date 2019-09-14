@@ -186,3 +186,7 @@ func (u *User) GetName() string {
 func (u *User) SetDeleted() {
 	u.Deleted = 1
 }
+
+func (u *User) IsDeleted() bool {
+	return u.Deleted > 0
+}

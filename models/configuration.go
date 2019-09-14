@@ -18,7 +18,7 @@ const (
 
 type Configuration struct {
 	ID      int                    `json:"id"`
-	Name    string                 `json:"username"`
+	Name    string                 `json:"name"`
 	Config  map[string]interface{} `json:"config"`
 	Deleted int                    `json:"deleted"`
 }
@@ -248,4 +248,8 @@ func (c *Configuration) GetName() string {
 
 func (c *Configuration) SetDeleted() {
 	c.Deleted = 1
+}
+
+func (c *Configuration) IsDeleted() bool {
+	return c.Deleted > 0
 }

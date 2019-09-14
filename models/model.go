@@ -20,4 +20,5 @@ type Model interface {
 	SetID(int)
 	GetName() string
 	SetDeleted()
+	IsDeleted() bool
 }

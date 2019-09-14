@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"projectionist/consts"
 	"projectionist/models"
 	"sync"
 )
@@ -39,20 +40,20 @@ func (c *MockCfgProvider) GetByName(m models.Model, name string) error {
 	}
 	c.RUnlock()
 
-	return nil
+	return consts.ErrNotFound
 }
 
 func (c *MockCfgProvider) GetByID(m models.Model, id int64) (models.Model, error) {
 	c.RLock()
 	for _, model := range c.configs {
-		if m.GetID() == model.GetID() {
+		if id == int64(model.GetID()) {
 			c.RUnlock()
 			return model, nil
 		}
 	}
 	c.RUnlock()
 
-	return m, nil
+	return m, consts.ErrNotFound
 }
 
 func (c *MockCfgProvider) IsExistByName(m models.Model) (error, bool) {
@@ -89,8 +90,19 @@ func (c *MockCfgProvider) Pagination(m models.Model, start, stop int) ([]models.
 		start = 0
 	}
 
+	var maxResultCount = stop - start
+
 	c.RLock()
-	for i := start; i <= stop; i++ {
+	for i := 0; i < len(c.configs); i++ {
+		var count = len(result)
+		if count >= maxResultCount {
+			break
+		}
+
+		if c.configs[i].IsDeleted() {
+			continue
+		}
+
 		result = append(result, c.configs[i])
 	}
 	c.RUnlock()
@@ -103,12 +115,12 @@ func (c *MockCfgProvider) Update(m models.Model, id int) error {
 	for i, model := range c.configs {
 		if model.GetID() == id {
 			c.configs[i] = m
-			break
+			return nil
 		}
 	}
 	c.Unlock()
 
-	return nil
+	return consts.ErrNotFound
 }
 
 func (c *MockCfgProvider) Delete(m models.Model, id int) error {
@@ -116,10 +128,10 @@ func (c *MockCfgProvider) Delete(m models.Model, id int) error {
 	for i, model := range c.configs {
 		if model.GetID() == id {
 			c.configs[i].SetDeleted()
-			break
+			return nil
 		}
 	}
 	c.Unlock()
 
-	return nil
+	return consts.ErrNotFound
 }
