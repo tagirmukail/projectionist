@@ -2,8 +2,12 @@ package utils
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/gorilla/mux"
 	"net/http"
 	"os"
+	"projectionist/consts"
+	"strconv"
 	"strings"
 )
 
@@ -16,6 +20,43 @@ func Message(status bool, message string) map[string]interface{} {
 func JsonRespond(w http.ResponseWriter, data map[string]interface{}) error {
 	w.Header().Add("Content-Type", "application/json")
 	return json.NewEncoder(w).Encode(data)
+}
+
+// GetIDFromReq get id parameter from request
+func GetIDFromReq(r *http.Request) (int, error) {
+	var params = mux.Vars(r)
+	idStr, ok := params["id"]
+	if !ok {
+		return 0, fmt.Errorf(strings.ToLower(consts.IdIsEmptyResp))
+	}
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return 0, fmt.Errorf(strings.ToLower(consts.IdIsNotNumberResp))
+	}
+
+	return id, nil
+}
+
+// GetPageAndCountFromReq get page and count parameter from request
+func GetPageAndCountFromReq(r *http.Request) (int, int, error) {
+	pageStr := r.URL.Query().Get(consts.PAGE_PARAM)
+	countStr := r.URL.Query().Get(consts.COUNT_PARAM)
+	if pageStr == "" || countStr == "" {
+		return 0, 0, fmt.Errorf(strings.ToLower(consts.PageAndCountRequiredResp))
+	}
+
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		return 0, 0, fmt.Errorf(strings.ToLower(consts.PageMustNumberResp))
+	}
+
+	count, err := strconv.Atoi(countStr)
+	if err != nil {
+		return 0, 0, fmt.Errorf(strings.ToLower(consts.CountMustNumberResp))
+	}
+
+	return page, count, nil
 }
 
 // CreateDir create dir

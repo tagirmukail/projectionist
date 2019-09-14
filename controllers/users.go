@@ -3,14 +3,13 @@ package controllers
 import (
 	"database/sql"
 	"encoding/json"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"projectionist/consts"
 	"projectionist/models"
 	"projectionist/provider"
 	"projectionist/utils"
-	"strconv"
+	"strings"
 )
 
 func NewUser(dbProvider provider.IDBProvider) http.HandlerFunc {
@@ -64,16 +63,13 @@ func NewUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 
 func GetUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var params = mux.Vars(r)
-		idStr, ok := params["id"]
-		if !ok {
-			w.WriteHeader(http.StatusBadRequest)
-			utils.JsonRespond(w, utils.Message(false, consts.IdIsEmptyResp))
-			return
-		}
-
-		id, err := strconv.Atoi(idStr)
+		var id, err = utils.GetIDFromReq(r)
 		if err != nil {
+			if err.Error() == strings.ToLower(consts.IdIsEmptyResp) {
+				w.WriteHeader(http.StatusBadRequest)
+				utils.JsonRespond(w, utils.Message(false, consts.IdIsEmptyResp))
+				return
+			}
 			w.WriteHeader(http.StatusBadRequest)
 			utils.JsonRespond(w, utils.Message(false, consts.IdIsNotNumberResp))
 			return
@@ -110,18 +106,28 @@ func GetUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 
 func GetUserList(dbProvider provider.IDBProvider) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		pageStr := r.URL.Query().Get(consts.PAGE_PARAM)
-		countStr := r.URL.Query().Get(consts.COUNT_PARAM)
-		if pageStr == "" || countStr == "" {
-			w.WriteHeader(http.StatusBadRequest)
-			utils.JsonRespond(w, utils.Message(false, consts.PageAndCountRequiredResp))
-			return
-		}
-
-		page, err := strconv.Atoi(pageStr)
+		page, count, err := utils.GetPageAndCountFromReq(r)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			utils.JsonRespond(w, utils.Message(false, consts.PageMustNumber))
+			if err.Error() == strings.ToLower(consts.PageAndCountRequiredResp) {
+				w.WriteHeader(http.StatusBadRequest)
+				utils.JsonRespond(w, utils.Message(false, consts.PageAndCountRequiredResp))
+				return
+			}
+
+			if err.Error() == strings.ToLower(consts.PageMustNumberResp) {
+				w.WriteHeader(http.StatusBadRequest)
+				utils.JsonRespond(w, utils.Message(false, consts.PageMustNumberResp))
+				return
+			}
+
+			if err.Error() == strings.ToLower(consts.CountMustNumberResp) {
+				w.WriteHeader(http.StatusBadRequest)
+				utils.JsonRespond(w, utils.Message(false, consts.CountMustNumberResp))
+				return
+			}
+
+			w.WriteHeader(http.StatusInternalServerError)
+			utils.JsonRespond(w, utils.Message(false, consts.SmtWhenWrongResp))
 			return
 		}
 
@@ -129,13 +135,6 @@ func GetUserList(dbProvider provider.IDBProvider) http.HandlerFunc {
 			w.WriteHeader(http.StatusOK)
 			respond := utils.Message(true, "")
 			utils.JsonRespond(w, respond)
-			return
-		}
-
-		count, err := strconv.Atoi(countStr)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			utils.JsonRespond(w, utils.Message(false, consts.CountMustNumber))
 			return
 		}
 
@@ -176,16 +175,13 @@ func GetUserList(dbProvider provider.IDBProvider) http.HandlerFunc {
 
 func UpdateUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var params = mux.Vars(r)
-		idStr, ok := params["id"]
-		if !ok {
-			w.WriteHeader(http.StatusBadRequest)
-			utils.JsonRespond(w, utils.Message(false, consts.IdIsEmptyResp))
-			return
-		}
-
-		id, err := strconv.Atoi(idStr)
+		var id, err = utils.GetIDFromReq(r)
 		if err != nil {
+			if err.Error() == strings.ToLower(consts.IdIsEmptyResp) {
+				w.WriteHeader(http.StatusBadRequest)
+				utils.JsonRespond(w, utils.Message(false, consts.IdIsEmptyResp))
+				return
+			}
 			w.WriteHeader(http.StatusBadRequest)
 			utils.JsonRespond(w, utils.Message(false, consts.IdIsNotNumberResp))
 			return
@@ -203,7 +199,7 @@ func UpdateUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 
 		err, exist := dbProvider.IsExistByName(&user)
 		if !exist {
-			w.WriteHeader(http.StatusForbidden)
+			w.WriteHeader(http.StatusNotFound)
 			utils.JsonRespond(w, utils.Message(false, consts.NotExistResp))
 			return
 		}
@@ -231,16 +227,13 @@ func UpdateUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 
 func DeleteUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var params = mux.Vars(r)
-		idStr, ok := params["id"]
-		if !ok {
-			w.WriteHeader(http.StatusBadRequest)
-			utils.JsonRespond(w, utils.Message(false, consts.IdIsEmptyResp))
-			return
-		}
-
-		id, err := strconv.Atoi(idStr)
+		var id, err = utils.GetIDFromReq(r)
 		if err != nil {
+			if err.Error() == strings.ToLower(consts.IdIsEmptyResp) {
+				w.WriteHeader(http.StatusBadRequest)
+				utils.JsonRespond(w, utils.Message(false, consts.IdIsEmptyResp))
+				return
+			}
 			w.WriteHeader(http.StatusBadRequest)
 			utils.JsonRespond(w, utils.Message(false, consts.IdIsNotNumberResp))
 			return

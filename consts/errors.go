@@ -14,8 +14,8 @@ const (
 	NotSavedResp             = "Save error"
 	NotExistResp             = "Not exist"
 	PageAndCountRequiredResp = "Page and count required"
-	PageMustNumber           = "Page must be a number"
-	CountMustNumber          = "Count must be a number"
+	PageMustNumberResp       = "Page must be a number"
+	CountMustNumberResp      = "Count must be a number"
 	NotUpdatedResp           = "Not updated"
 	NotDeletedResp           = "Not deleted"
 )

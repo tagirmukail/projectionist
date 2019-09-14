@@ -1034,7 +1034,7 @@ func TestGetUserList(t *testing.T) {
 			},
 			wantResponseBody: map[string]interface{}{
 				"status":  false,
-				"message": consts.PageMustNumber,
+				"message": consts.PageMustNumberResp,
 			},
 			wantResponseCode: 400,
 		},
@@ -1136,7 +1136,7 @@ func TestGetUserList(t *testing.T) {
 			},
 			wantResponseBody: map[string]interface{}{
 				"status":  false,
-				"message": consts.CountMustNumber,
+				"message": consts.CountMustNumberResp,
 			},
 			wantResponseCode: 400,
 		},
@@ -1546,7 +1546,7 @@ func TestUpdateUser(t *testing.T) {
 				"status":  false,
 				"message": consts.NotExistResp,
 			},
-			wantResponseCode: 403,
+			wantResponseCode: 404,
 		},
 		{
 			name: "user not updated, id is empty",
