@@ -6,6 +6,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"log"
 	"net/http"
+	"projectionist/consts"
 	"projectionist/forms"
 	"projectionist/models"
 	"projectionist/provider"
@@ -38,7 +39,7 @@ func LoginApi(
 		var user = models.User{}
 
 		if err = dbProvider.GetByName(&user, form.Username); err != nil {
-			respond = utils.Message(false, "User not exist")
+			respond = utils.Message(false, consts.NotExistResp)
 			log.Printf("LoginApi() error: %v", err)
 			resp.WriteHeader(http.StatusInternalServerError)
 			utils.JsonRespond(resp, respond)

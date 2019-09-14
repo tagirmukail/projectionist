@@ -76,7 +76,7 @@ func TestNewUser(t *testing.T) {
 			},
 			wantResponseBody: map[string]interface{}{
 				"status":  false,
-				"message": "Invalid username",
+				"message": consts.InputDataInvalidResp,
 			},
 			wantResponseCode: 400,
 		},
@@ -103,7 +103,7 @@ func TestNewUser(t *testing.T) {
 			},
 			wantResponseBody: map[string]interface{}{
 				"status":  false,
-				"message": "Invalid password",
+				"message": consts.InputDataInvalidResp,
 			},
 			wantResponseCode: 400,
 		},
@@ -133,7 +133,7 @@ func TestNewUser(t *testing.T) {
 			},
 			wantResponseBody: map[string]interface{}{
 				"status":  false,
-				"message": "Invalid username",
+				"message": consts.InputDataInvalidResp,
 			},
 			wantResponseCode: 400,
 		},
@@ -174,7 +174,7 @@ func TestNewUser(t *testing.T) {
 			},
 			wantResponseBody: map[string]interface{}{
 				"status":  false,
-				"message": "Invalid password",
+				"message": consts.InputDataInvalidResp,
 			},
 			wantResponseCode: 400,
 		},
@@ -201,7 +201,7 @@ func TestNewUser(t *testing.T) {
 			},
 			wantResponseBody: map[string]interface{}{
 				"status":  false,
-				"message": "Invalid role",
+				"message": consts.InputDataInvalidResp,
 			},
 			wantResponseCode: 400,
 		},
@@ -228,7 +228,7 @@ func TestNewUser(t *testing.T) {
 			},
 			wantResponseBody: map[string]interface{}{
 				"status":  false,
-				"message": "User exist",
+				"message": "A user with the same name already exists.",
 			},
 			wantResponseCode: 403,
 		},
@@ -289,7 +289,7 @@ func TestGetUser(t *testing.T) {
 		wantResponseCode int
 	}{
 		{
-			name: "user exist",
+			name: "A user with the same name already exists.",
 			args: args{
 				dbProvider: provider.NewMockUsersDBProvider(
 					map[int]models.Model{
@@ -321,7 +321,7 @@ func TestGetUser(t *testing.T) {
 			wantResponseCode: 200,
 		},
 		{
-			name: "user not exist",
+			name: consts.NotExistResp,
 			args: args{
 				dbProvider: provider.NewMockUsersDBProvider(
 					map[int]models.Model{
@@ -340,7 +340,7 @@ func TestGetUser(t *testing.T) {
 			},
 			wantResponseBody: map[string]interface{}{
 				"status":  false,
-				"message": "user not exist",
+				"message": consts.NotExistResp,
 			},
 			wantResponseCode: 404,
 		},
@@ -364,7 +364,7 @@ func TestGetUser(t *testing.T) {
 			},
 			wantResponseBody: map[string]interface{}{
 				"status":  false,
-				"message": "id is not number",
+				"message": consts.IdIsNotNumberResp,
 			},
 			wantResponseCode: 400,
 		},
@@ -386,7 +386,7 @@ func TestGetUser(t *testing.T) {
 			},
 			wantResponseBody: map[string]interface{}{
 				"status":  false,
-				"message": "id is empty",
+				"message": consts.IdIsEmptyResp,
 			},
 			wantResponseCode: 400,
 		},
@@ -1034,7 +1034,7 @@ func TestGetUserList(t *testing.T) {
 			},
 			wantResponseBody: map[string]interface{}{
 				"status":  false,
-				"message": "page must be a number",
+				"message": consts.PageMustNumber,
 			},
 			wantResponseCode: 400,
 		},
@@ -1136,7 +1136,7 @@ func TestGetUserList(t *testing.T) {
 			},
 			wantResponseBody: map[string]interface{}{
 				"status":  false,
-				"message": "count must be a number",
+				"message": consts.CountMustNumber,
 			},
 			wantResponseCode: 400,
 		},
@@ -1235,7 +1235,7 @@ func TestGetUserList(t *testing.T) {
 			},
 			wantResponseBody: map[string]interface{}{
 				"status":  false,
-				"message": "page and count required",
+				"message": consts.PageAndCountRequiredResp,
 			},
 			wantResponseCode: 400,
 		},
@@ -1544,7 +1544,7 @@ func TestUpdateUser(t *testing.T) {
 			},
 			wantResponseBody: map[string]interface{}{
 				"status":  false,
-				"message": "user not exist",
+				"message": consts.NotExistResp,
 			},
 			wantResponseCode: 403,
 		},
@@ -1651,12 +1651,12 @@ func TestUpdateUser(t *testing.T) {
 			},
 			wantResponseBody: map[string]interface{}{
 				"status":  false,
-				"message": "id is empty",
+				"message": consts.IdIsEmptyResp,
 			},
 			wantResponseCode: 400,
 		},
 		{
-			name: "user not updated, id is not number",
+			name: "user not updated, consts.IdIsNotNumberResp",
 			args: args{
 				dbProvider: provider.NewMockUsersDBProvider(
 					map[int]models.Model{
@@ -1760,7 +1760,7 @@ func TestUpdateUser(t *testing.T) {
 			},
 			wantResponseBody: map[string]interface{}{
 				"status":  false,
-				"message": "id is not number",
+				"message": consts.IdIsNotNumberResp,
 			},
 			wantResponseCode: 400,
 		},
@@ -1864,7 +1864,7 @@ func TestUpdateUser(t *testing.T) {
 			},
 			wantResponseBody: map[string]interface{}{
 				"status":  false,
-				"message": "bad input fields",
+				"message": consts.BadInputDataResp,
 			},
 			wantResponseCode: 400,
 		},
@@ -2123,7 +2123,7 @@ func TestDeleteUser(t *testing.T) {
 			},
 			wantResponseBody: map[string]interface{}{
 				"status":  false,
-				"message": "user not deleted",
+				"message": consts.NotDeletedResp,
 			},
 			wantResponseCode: 500,
 		},
@@ -2222,12 +2222,12 @@ func TestDeleteUser(t *testing.T) {
 			},
 			wantResponseBody: map[string]interface{}{
 				"status":  false,
-				"message": "id is empty",
+				"message": consts.IdIsEmptyResp,
 			},
 			wantResponseCode: 400,
 		},
 		{
-			name: "user not deleted, id is not number",
+			name: "user not deleted, consts.IdIsNotNumberResp",
 			args: args{
 				dbProvider: provider.NewMockUsersDBProvider(
 					map[int]models.Model{
@@ -2323,7 +2323,7 @@ func TestDeleteUser(t *testing.T) {
 			},
 			wantResponseBody: map[string]interface{}{
 				"status":  false,
-				"message": "id is not number",
+				"message": consts.IdIsNotNumberResp,
 			},
 			wantResponseCode: 400,
 		},

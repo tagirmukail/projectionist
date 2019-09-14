@@ -18,8 +18,9 @@ import (
 )
 
 type App struct {
-	cfg        *config.Config
-	dbProvider provider.IDBProvider
+	cfg         *config.Config
+	dbProvider  provider.IDBProvider
+	cfgProvider provider.IDBProvider
 }
 
 func NewApp(cfg *config.Config, sqlDB *sql.DB) (*App, error) {
@@ -28,9 +29,15 @@ func NewApp(cfg *config.Config, sqlDB *sql.DB) (*App, error) {
 		return nil, err
 	}
 
+	cfgProvider, err := provider.NewCfgProvider()
+	if err != nil {
+		return nil, err
+	}
+
 	return &App{
-		cfg:        cfg,
-		dbProvider: provider.NewDBProvider(sqlDB),
+		cfg:         cfg,
+		dbProvider:  provider.NewDBProvider(sqlDB),
+		cfgProvider: cfgProvider,
 	}, nil
 }
 
@@ -64,11 +71,11 @@ func (a *App) newRouter() *mux.Router {
 	router.HandleFunc(consts.UrlUserV1+"/{id}", controllers.UpdateUser(a.dbProvider)).Methods(http.MethodPut)
 	router.HandleFunc(consts.UrlUserV1+"/{id}", controllers.DeleteUser(a.dbProvider)).Methods(http.MethodGet)
 
-	router.HandleFunc(consts.UrlCfgV1, controllers.NewCfg()).Methods(http.MethodPost)
-	router.HandleFunc(consts.UrlCfgV1+"/{id}", controllers.GetCfg()).Methods(http.MethodGet)
-	router.HandleFunc(consts.UrlCfgV1, controllers.GetCfgList()).Methods(http.MethodPost)
-	router.HandleFunc(consts.UrlCfgV1+"/{id}", controllers.UpdateCfg()).Methods(http.MethodPut)
-	router.HandleFunc(consts.UrlCfgV1+"/{id}", controllers.DeleteCfg()).Methods(http.MethodDelete)
+	router.HandleFunc(consts.UrlCfgV1, controllers.NewCfg(a.cfgProvider)).Methods(http.MethodPost)
+	router.HandleFunc(consts.UrlCfgV1+"/{id}", controllers.GetCfg(a.cfgProvider)).Methods(http.MethodGet)
+	router.HandleFunc(consts.UrlCfgV1, controllers.GetCfgList(a.cfgProvider)).Methods(http.MethodPost)
+	router.HandleFunc(consts.UrlCfgV1+"/{id}", controllers.UpdateCfg(a.cfgProvider)).Methods(http.MethodPut)
+	router.HandleFunc(consts.UrlCfgV1+"/{id}", controllers.DeleteCfg(a.cfgProvider)).Methods(http.MethodDelete)
 
 	router.HandleFunc(consts.UrlServiceV1, controllers.NewService()).Methods(http.MethodPost)
 	router.HandleFunc(consts.UrlServiceV1+"/{id}", controllers.GetService()).Methods(http.MethodGet)

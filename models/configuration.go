@@ -50,7 +50,7 @@ func (c *Configuration) IsExistByName() (error, bool) {
 		return err, false
 	}
 	if len(matched) == 0 {
-		return fmt.Errorf("not found file %s", c.Name), false
+		return consts.ErrNotFound, false
 	}
 
 	return nil, true
@@ -108,7 +108,7 @@ func (c *Configuration) GetByID(id int64) error {
 	}
 
 	if len(matched) == 0 {
-		return fmt.Errorf("not found file by id %d", id)
+		return consts.ErrNotFound
 	}
 	var filePath = matched[0]
 
@@ -129,7 +129,7 @@ func (c *Configuration) GetByID(id int64) error {
 	}
 
 	if int64(cfg.ID) != id {
-		return fmt.Errorf("not found file %d", id)
+		return consts.ErrNotFound
 	}
 
 	if cfg.Deleted > 0 {
@@ -188,7 +188,7 @@ func (c *Configuration) Update(id int) error {
 	}
 
 	if len(matched) == 0 {
-		return fmt.Errorf("not found file by id %d", id)
+		return consts.ErrNotFound
 	}
 	var filePath = matched[0]
 
@@ -223,7 +223,7 @@ func (c *Configuration) Delete(id int) error {
 	}
 
 	if len(matched) == 0 {
-		return fmt.Errorf("not found file by id %d", id)
+		return consts.ErrNotFound
 	}
 	var filePath = matched[0]
 

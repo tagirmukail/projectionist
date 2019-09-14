@@ -21,7 +21,7 @@ func NewUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 		if err != nil {
 			log.Printf("new user decode request body error: %v", err)
 			w.WriteHeader(http.StatusBadRequest)
-			utils.JsonRespond(w, utils.Message(false, "Bad input fields"))
+			utils.JsonRespond(w, utils.Message(false, consts.BadInputDataResp))
 			return
 		}
 
@@ -29,21 +29,21 @@ func NewUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 		if err != nil {
 			log.Printf("new user validate error: %v", err)
 			w.WriteHeader(http.StatusBadRequest)
-			utils.JsonRespond(w, utils.Message(false, err.Error()))
+			utils.JsonRespond(w, utils.Message(false, consts.InputDataInvalidResp))
 			return
 		}
 
 		err, exist := dbProvider.IsExistByName(&user)
 		if exist && err == nil {
 			w.WriteHeader(http.StatusForbidden)
-			utils.JsonRespond(w, utils.Message(false, "User exist"))
+			utils.JsonRespond(w, utils.Message(false, "A user with the same name already exists."))
 			return
 		}
 
 		if err != nil {
 			log.Printf("new user create error: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
-			utils.JsonRespond(w, utils.Message(false, "User not created"))
+			utils.JsonRespond(w, utils.Message(false, consts.SmtWhenWrongResp))
 			return
 		}
 
@@ -51,7 +51,7 @@ func NewUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 		if err != nil {
 			log.Printf("new user save error: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
-			utils.JsonRespond(w, utils.Message(false, "User not saved"))
+			utils.JsonRespond(w, utils.Message(false, consts.NotSavedResp))
 			return
 		}
 
@@ -68,14 +68,14 @@ func GetUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 		idStr, ok := params["id"]
 		if !ok {
 			w.WriteHeader(http.StatusBadRequest)
-			utils.JsonRespond(w, utils.Message(false, "id is empty"))
+			utils.JsonRespond(w, utils.Message(false, consts.IdIsEmptyResp))
 			return
 		}
 
 		id, err := strconv.Atoi(idStr)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			utils.JsonRespond(w, utils.Message(false, "id is not number"))
+			utils.JsonRespond(w, utils.Message(false, consts.IdIsNotNumberResp))
 			return
 		}
 
@@ -85,19 +85,19 @@ func GetUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 		if err != nil {
 			if err == sql.ErrNoRows {
 				w.WriteHeader(http.StatusNotFound)
-				utils.JsonRespond(w, utils.Message(false, "user not exist"))
+				utils.JsonRespond(w, utils.Message(false, consts.NotExistResp))
 				return
 			}
 			log.Printf("GetUser() error: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
-			utils.JsonRespond(w, utils.Message(false, "something went wrong"))
+			utils.JsonRespond(w, utils.Message(false, consts.SmtWhenWrongResp))
 			return
 		}
 
 		user, ok := userModel.(*models.User)
 		if !ok {
 			w.WriteHeader(http.StatusNotFound)
-			utils.JsonRespond(w, utils.Message(false, "user not exist"))
+			utils.JsonRespond(w, utils.Message(false, consts.NotExistResp))
 			return
 		}
 
@@ -114,14 +114,14 @@ func GetUserList(dbProvider provider.IDBProvider) http.HandlerFunc {
 		countStr := r.URL.Query().Get(consts.COUNT_PARAM)
 		if pageStr == "" || countStr == "" {
 			w.WriteHeader(http.StatusBadRequest)
-			utils.JsonRespond(w, utils.Message(false, "page and count required"))
+			utils.JsonRespond(w, utils.Message(false, consts.PageAndCountRequiredResp))
 			return
 		}
 
 		page, err := strconv.Atoi(pageStr)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			utils.JsonRespond(w, utils.Message(false, "page must be a number"))
+			utils.JsonRespond(w, utils.Message(false, consts.PageMustNumber))
 			return
 		}
 
@@ -135,7 +135,7 @@ func GetUserList(dbProvider provider.IDBProvider) http.HandlerFunc {
 		count, err := strconv.Atoi(countStr)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			utils.JsonRespond(w, utils.Message(false, "count must be a number"))
+			utils.JsonRespond(w, utils.Message(false, consts.CountMustNumber))
 			return
 		}
 
@@ -145,7 +145,7 @@ func GetUserList(dbProvider provider.IDBProvider) http.HandlerFunc {
 		if err != nil {
 			log.Printf("GetUserList() count all users error: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
-			utils.JsonRespond(w, utils.Message(false, "unexpected error"))
+			utils.JsonRespond(w, utils.Message(false, consts.SmtWhenWrongResp))
 			return
 		}
 
@@ -164,7 +164,7 @@ func GetUserList(dbProvider provider.IDBProvider) http.HandlerFunc {
 		if err != nil {
 			log.Printf("GetUserList() pagination by users error: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
-			utils.JsonRespond(w, utils.Message(false, "unexpected error"))
+			utils.JsonRespond(w, utils.Message(false, consts.SmtWhenWrongResp))
 			return
 		}
 
@@ -180,14 +180,14 @@ func UpdateUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 		idStr, ok := params["id"]
 		if !ok {
 			w.WriteHeader(http.StatusBadRequest)
-			utils.JsonRespond(w, utils.Message(false, "id is empty"))
+			utils.JsonRespond(w, utils.Message(false, consts.IdIsEmptyResp))
 			return
 		}
 
 		id, err := strconv.Atoi(idStr)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			utils.JsonRespond(w, utils.Message(false, "id is not number"))
+			utils.JsonRespond(w, utils.Message(false, consts.IdIsNotNumberResp))
 			return
 		}
 
@@ -197,27 +197,27 @@ func UpdateUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 		if err != nil {
 			log.Printf("UpdateUser() error: %v", err)
 			w.WriteHeader(http.StatusBadRequest)
-			utils.JsonRespond(w, utils.Message(false, "bad input fields"))
+			utils.JsonRespond(w, utils.Message(false, consts.BadInputDataResp))
 			return
 		}
 
 		err, exist := dbProvider.IsExistByName(&user)
 		if !exist {
 			w.WriteHeader(http.StatusForbidden)
-			utils.JsonRespond(w, utils.Message(false, "user not exist"))
+			utils.JsonRespond(w, utils.Message(false, consts.NotExistResp))
 			return
 		}
 
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			utils.JsonRespond(w, utils.Message(false, "something went wrong"))
+			utils.JsonRespond(w, utils.Message(false, consts.SmtWhenWrongResp))
 			return
 		}
 
 		err = dbProvider.Update(&user, id)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			utils.JsonRespond(w, utils.Message(false, "user not updated"))
+			utils.JsonRespond(w, utils.Message(false, consts.NotUpdatedResp))
 			return
 		}
 
@@ -235,14 +235,14 @@ func DeleteUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 		idStr, ok := params["id"]
 		if !ok {
 			w.WriteHeader(http.StatusBadRequest)
-			utils.JsonRespond(w, utils.Message(false, "id is empty"))
+			utils.JsonRespond(w, utils.Message(false, consts.IdIsEmptyResp))
 			return
 		}
 
 		id, err := strconv.Atoi(idStr)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			utils.JsonRespond(w, utils.Message(false, "id is not number"))
+			utils.JsonRespond(w, utils.Message(false, consts.IdIsNotNumberResp))
 			return
 		}
 
@@ -251,7 +251,7 @@ func DeleteUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 		err = dbProvider.Delete(user, id)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			utils.JsonRespond(w, utils.Message(false, "user not deleted"))
+			utils.JsonRespond(w, utils.Message(false, consts.NotDeletedResp))
 			return
 		}
 
