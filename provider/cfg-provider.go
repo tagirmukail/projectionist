@@ -2,7 +2,6 @@ package provider
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -54,7 +53,9 @@ func NewCfgProvider() (*CfgProvider, error) {
 			cfgProvider.maxID = cfg.ID
 		}
 
+		cfgProvider.Lock()
 		cfgProvider.configs = append(cfgProvider.configs, &cfg)
+		cfgProvider.Unlock()
 
 		return nil
 	})
@@ -78,39 +79,42 @@ func (c *CfgProvider) Save(m models.Model) error {
 
 func (c *CfgProvider) GetByName(m models.Model, name string) error {
 	c.RLock()
-	defer c.RUnlock()
 	for _, model := range c.configs {
 		if name == model.GetName() {
 			m = model
+			c.RUnlock()
 			return nil
 		}
 	}
+	c.RUnlock()
 
-	return fmt.Errorf("configuration with name %v not exist", name)
+	return m.GetByName(name)
 }
 
 func (c *CfgProvider) GetByID(m models.Model, id int64) (models.Model, error) {
 	c.RLock()
-	defer c.RUnlock()
 	for _, model := range c.configs {
 		if m.GetID() == model.GetID() {
+			c.RUnlock()
 			return model, nil
 		}
 	}
+	c.RUnlock()
 
-	return nil, fmt.Errorf("configuration with id %v not exist", id)
+	return m, m.GetByID(id)
 }
 
 func (c *CfgProvider) IsExistByName(m models.Model) (error, bool) {
 	c.RLock()
-	defer c.RUnlock()
 	for _, model := range c.configs {
 		if m.GetName() == model.GetName() {
+			c.RUnlock()
 			return nil, true
 		}
 	}
+	c.RUnlock()
 
-	return nil, false
+	return m.IsExistByName()
 }
 
 func (c *CfgProvider) Count(m models.Model) (int, error) {
@@ -139,6 +143,10 @@ func (c *CfgProvider) Pagination(m models.Model, start, stop int) ([]models.Mode
 		result = append(result, c.configs[i])
 	}
 	c.RUnlock()
+
+	if len(result) == 0 {
+		return m.Pagination(start, stop)
+	}
 
 	return result, nil
 }

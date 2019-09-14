@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
+	"strings"
 )
 
 // Message - represent struct of http response
@@ -48,4 +49,11 @@ func Pagination(page, count int) (start, end int) {
 	start = (page - 1) * count
 	end = start + count
 	return start, end
+}
+
+func GetFileName(path string) string {
+	var parths = strings.Split(path, "/")
+	var lastElemIndx = len(parths) - 1
+	var lastElem = parths[lastElemIndx]
+	return lastElem
 }

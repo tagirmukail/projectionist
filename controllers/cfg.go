@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"projectionist/consts"
+	"projectionist/models"
+	"projectionist/provider"
 	"projectionist/utils"
 )
 
-func NewCfg() http.HandlerFunc {
+func NewCfg(provider provider.IDBProvider) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		names, ok := r.URL.Query()["name"]
 		if !ok || len(names) == 0 {
@@ -18,6 +19,11 @@ func NewCfg() http.HandlerFunc {
 		}
 
 		var configFileName = names[0]
+		if configFileName == "" {
+			w.WriteHeader(http.StatusBadRequest)
+			utils.JsonRespond(w, utils.Message(false, "name is empty"))
+			return
+		}
 		configFileName = fmt.Sprintf("%v.json", configFileName)
 
 		var form = make(map[string]interface{})
@@ -27,11 +33,23 @@ func NewCfg() http.HandlerFunc {
 			utils.JsonRespond(w, utils.Message(false, "Bad input data"))
 			return
 		}
-		var savePath = fmt.Sprintf("%s/%s", consts.PathSaveCfgs, configFileName)
-		err = utils.SaveJsonFile(savePath, form)
+
+		var cfg = &models.Configuration{}
+
+		countCfgs, err := provider.Count(cfg)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			utils.JsonRespond(w, utils.Message(false, "File not saved"))
+			utils.JsonRespond(w, utils.Message(false, "Something when wrong"))
+			return
+		}
+
+		cfg.ID = countCfgs + 1
+		cfg.Name = fmt.Sprintf(models.FileIDNAMEPtrn, cfg.ID, configFileName)
+		cfg.Config = form
+		err = provider.Save(cfg)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			utils.JsonRespond(w, utils.Message(false, "Something when wrong, file not saved"))
 			return
 		}
 
