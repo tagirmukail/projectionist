@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"io/ioutil"
@@ -409,7 +410,7 @@ func TestGetCfgList(t *testing.T) {
 			wantResponseCode: 200,
 		},
 		{
-			name: "get configs list - successful",
+			name: "get configs list - successful for first page",
 			args: args{
 				provider: provider.NewMockCfgProvider([]models.Model{
 					&models.Configuration{
@@ -437,7 +438,7 @@ func TestGetCfgList(t *testing.T) {
 							"test3":   "test3",
 							"test111": "test111",
 						},
-						Deleted: 1,
+						Deleted: 0,
 					},
 					&models.Configuration{
 						ID:   4,
@@ -491,7 +492,7 @@ func TestGetCfgList(t *testing.T) {
 							"test9":    "test9",
 							"test1119": "test1119",
 						},
-						Deleted: 1,
+						Deleted: 0,
 					},
 				}),
 				urlValues: map[string]string{
@@ -518,6 +519,15 @@ func TestGetCfgList(t *testing.T) {
 						"config": map[string]interface{}{
 							"test2":  "test2",
 							"test11": "test11",
+						},
+						"deleted": float64(0),
+					},
+					map[string]interface{}{
+						"id":   float64(3),
+						"name": "test3",
+						"config": map[string]interface{}{
+							"test3":   "test3",
+							"test111": "test111",
 						},
 						"deleted": float64(0),
 					},
@@ -563,6 +573,141 @@ func TestGetCfgList(t *testing.T) {
 						"config": map[string]interface{}{
 							"test8":   "test8",
 							"test118": "test118",
+						},
+						"deleted": float64(0),
+					},
+					map[string]interface{}{
+						"id":   float64(9),
+						"name": "test9",
+						"config": map[string]interface{}{
+							"test9":    "test9",
+							"test1119": "test1119",
+						},
+						"deleted": float64(0),
+					},
+				},
+			},
+			wantResponseCode: 200,
+		},
+		{
+			name: "get configs list - successful for second page",
+			args: args{
+				provider: provider.NewMockCfgProvider([]models.Model{
+					&models.Configuration{
+						ID:   1,
+						Name: "test",
+						Config: map[string]interface{}{
+							"test":  "test",
+							"test1": "test1",
+						},
+						Deleted: 0,
+					},
+					&models.Configuration{
+						ID:   2,
+						Name: "test2",
+						Config: map[string]interface{}{
+							"test2":  "test2",
+							"test11": "test11",
+						},
+						Deleted: 0,
+					},
+					&models.Configuration{
+						ID:   3,
+						Name: "test3",
+						Config: map[string]interface{}{
+							"test3":   "test3",
+							"test111": "test111",
+						},
+						Deleted: 0,
+					},
+					&models.Configuration{
+						ID:   4,
+						Name: "test4",
+						Config: map[string]interface{}{
+							"test4":  "test4",
+							"test14": "test14",
+						},
+						Deleted: 0,
+					},
+					&models.Configuration{
+						ID:   5,
+						Name: "test5",
+						Config: map[string]interface{}{
+							"test5":   "test5",
+							"test115": "test115",
+						},
+						Deleted: 0,
+					},
+					&models.Configuration{
+						ID:   6,
+						Name: "test6",
+						Config: map[string]interface{}{
+							"test6":    "test6",
+							"test1116": "test1116",
+						},
+						Deleted: 0,
+					},
+					&models.Configuration{
+						ID:   7,
+						Name: "test7",
+						Config: map[string]interface{}{
+							"test7":  "test7",
+							"test17": "test17",
+						},
+						Deleted: 0,
+					},
+					&models.Configuration{
+						ID:   8,
+						Name: "test8",
+						Config: map[string]interface{}{
+							"test8":   "test8",
+							"test118": "test118",
+						},
+						Deleted: 0,
+					},
+					&models.Configuration{
+						ID:   9,
+						Name: "test9",
+						Config: map[string]interface{}{
+							"test9":    "test9",
+							"test1119": "test1119",
+						},
+						Deleted: 0,
+					},
+				}),
+				urlValues: map[string]string{
+					consts.PAGE_PARAM:  "2",
+					consts.COUNT_PARAM: "3",
+				},
+			},
+			wantResponseBody: map[string]interface{}{
+				"status":  true,
+				"message": "",
+				consts.KEY_CONFIGS: []interface{}{
+					map[string]interface{}{
+						"id":   float64(4),
+						"name": "test4",
+						"config": map[string]interface{}{
+							"test4":  "test4",
+							"test14": "test14",
+						},
+						"deleted": float64(0),
+					},
+					map[string]interface{}{
+						"id":   float64(5),
+						"name": "test5",
+						"config": map[string]interface{}{
+							"test5":   "test5",
+							"test115": "test115",
+						},
+						"deleted": float64(0),
+					},
+					map[string]interface{}{
+						"id":   float64(6),
+						"name": "test6",
+						"config": map[string]interface{}{
+							"test6":    "test6",
+							"test1116": "test1116",
 						},
 						"deleted": float64(0),
 					},
@@ -619,6 +764,10 @@ func TestGetCfgList(t *testing.T) {
 							t.Errorf("GetCfgList wantConfig is not map[string]interface{}")
 						}
 
+						if len(wantConfigs) != len(gotConfigs) {
+							t.Fatalf("GetCfgList len configs got %d want %d", len(gotConfigs), len(wantConfigs))
+						}
+
 						gotConfig, ok := gotConfigs[id].(map[string]interface{})
 						if !ok {
 							t.Errorf("GetCfgList gotConfig is not map[string]interface{}")
@@ -634,8 +783,8 @@ func TestGetCfgList(t *testing.T) {
 								)
 							}
 						}
-
 					}
+
 					continue
 				}
 				if !reflect.DeepEqual(wantValue, gotResp[wantKey]) {
@@ -648,8 +797,9 @@ func TestGetCfgList(t *testing.T) {
 
 func TestNewCfg(t *testing.T) {
 	type args struct {
-		provider  provider.IDBProvider
 		urlValues map[string]string
+		provider  provider.IDBProvider
+		config    map[string]interface{}
 	}
 	tests := []struct {
 		name             string
@@ -657,16 +807,138 @@ func TestNewCfg(t *testing.T) {
 		wantResponseBody map[string]interface{}
 		wantResponseCode int
 	}{
-		// TODO: Add test cases.
+		{
+			name: "new config successful created",
+			args: args{
+				provider: provider.NewMockCfgProvider(
+					[]models.Model{
+						&models.Configuration{
+							ID:   1,
+							Name: "test",
+							Config: map[string]interface{}{
+								"test":  "test",
+								"test1": "test1",
+							},
+							Deleted: 0,
+						},
+						&models.Configuration{
+							ID:   2,
+							Name: "test2",
+							Config: map[string]interface{}{
+								"test2":  "test2",
+								"test11": "test11",
+							},
+							Deleted: 0,
+						},
+					},
+				),
+				config: map[string]interface{}{
+					"test333": "test333",
+				},
+				urlValues: map[string]string{
+					"name": "test3",
+				},
+			},
+			wantResponseBody: map[string]interface{}{
+				"status":  true,
+				"message": "File test3.json saved",
+			},
+			wantResponseCode: 200,
+		},
+		{
+			name: "new config - parameter name empty",
+			args: args{
+				provider: provider.NewMockCfgProvider(
+					[]models.Model{
+						&models.Configuration{
+							ID:   1,
+							Name: "test",
+							Config: map[string]interface{}{
+								"test":  "test",
+								"test1": "test1",
+							},
+							Deleted: 0,
+						},
+						&models.Configuration{
+							ID:   2,
+							Name: "test2",
+							Config: map[string]interface{}{
+								"test2":  "test2",
+								"test11": "test11",
+							},
+							Deleted: 0,
+						},
+					},
+				),
+				config: map[string]interface{}{
+					"test333": "test333",
+				},
+				urlValues: map[string]string{},
+			},
+			wantResponseBody: map[string]interface{}{
+				"status":  false,
+				"message": consts.NameIsEmptyResp,
+			},
+			wantResponseCode: 400,
+		},
+		{
+			name: "new config - bad input data",
+			args: args{
+				provider: provider.NewMockCfgProvider(
+					[]models.Model{
+						&models.Configuration{
+							ID:   1,
+							Name: "test",
+							Config: map[string]interface{}{
+								"test":  "test",
+								"test1": "test1",
+							},
+							Deleted: 0,
+						},
+						&models.Configuration{
+							ID:   2,
+							Name: "test2",
+							Config: map[string]interface{}{
+								"test2":  "test2",
+								"test11": "test11",
+							},
+							Deleted: 0,
+						},
+					},
+				),
+				config: map[string]interface{}{},
+				urlValues: map[string]string{
+					"name": "test3",
+				},
+			},
+			wantResponseBody: map[string]interface{}{
+				"status":  false,
+				"message": consts.BadInputDataResp,
+			},
+			wantResponseCode: 400,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			request, err := http.NewRequest(http.MethodGet, consts.UrlCfgV1, nil)
+			bData, err := json.Marshal(tt.args.config)
+			if err != nil {
+				t.Fatalf("Marshal request form:%v", err)
+			}
+
+			buffer := bytes.NewBuffer(bData)
+
+			request, err := http.NewRequest(http.MethodGet, consts.UrlCfgV1, buffer)
 			if err != nil {
 				t.Fatalf("New Request error: %v", err)
 			}
 
-			request = mux.SetURLVars(request, tt.args.urlValues)
+			query := request.URL.Query()
+			for paramKey, paramValue := range tt.args.urlValues {
+				query.Add(paramKey, paramValue)
+			}
+
+			request.URL.RawQuery = query.Encode()
+
 			recorder := httptest.NewRecorder()
 
 			handler := NewCfg(tt.args.provider)
@@ -699,6 +971,7 @@ func TestNewCfg(t *testing.T) {
 
 func TestUpdateCfg(t *testing.T) {
 	type args struct {
+		config    map[string]interface{}
 		provider  provider.IDBProvider
 		urlValues map[string]string
 	}
@@ -708,11 +981,241 @@ func TestUpdateCfg(t *testing.T) {
 		wantResponseBody map[string]interface{}
 		wantResponseCode int
 	}{
-		// TODO: Add test cases.
+		{
+			name: "update config - successful",
+			args: args{
+				config: map[string]interface{}{
+					"id":   1,
+					"name": "test1-1",
+					"config": map[string]interface{}{
+						"test":  "test22222",
+						"test1": "test232323",
+						"test3": "test333323",
+					},
+					"deleted": 0,
+				},
+				provider: provider.NewMockCfgProvider(
+					[]models.Model{
+						&models.Configuration{
+							ID:   1,
+							Name: "test",
+							Config: map[string]interface{}{
+								"test":  "test",
+								"test1": "test1",
+							},
+							Deleted: 0,
+						},
+						&models.Configuration{
+							ID:   2,
+							Name: "test2",
+							Config: map[string]interface{}{
+								"test2":  "test2",
+								"test11": "test11",
+							},
+							Deleted: 0,
+						},
+					},
+				),
+				urlValues: map[string]string{
+					"id": "1",
+				},
+			},
+			wantResponseBody: map[string]interface{}{
+				"status":  true,
+				"message": "Config updated",
+				"config": map[string]interface{}{
+					"id":   float64(1),
+					"name": "test1-1",
+					"config": map[string]interface{}{
+						"test":  "test22222",
+						"test1": "test232323",
+						"test3": "test333323",
+					},
+					"deleted": float64(0),
+				},
+			},
+			wantResponseCode: 200,
+		},
+		{
+			name: "update config - not exist",
+			args: args{
+				config: map[string]interface{}{
+					"id":   3,
+					"name": "test1-1",
+					"config": map[string]interface{}{
+						"test":  "test22222",
+						"test1": "test232323",
+						"test3": "test333323",
+					},
+					"deleted": 0,
+				},
+				provider: provider.NewMockCfgProvider(
+					[]models.Model{
+						&models.Configuration{
+							ID:   1,
+							Name: "test",
+							Config: map[string]interface{}{
+								"test":  "test",
+								"test1": "test1",
+							},
+							Deleted: 0,
+						},
+						&models.Configuration{
+							ID:   2,
+							Name: "test2",
+							Config: map[string]interface{}{
+								"test2":  "test2",
+								"test11": "test11",
+							},
+							Deleted: 0,
+						},
+					},
+				),
+				urlValues: map[string]string{
+					"id": "3",
+				},
+			},
+			wantResponseBody: map[string]interface{}{
+				"status":  false,
+				"message": consts.NotExistResp,
+			},
+			wantResponseCode: 404,
+		},
+		{
+			name: "update config - id is empty",
+			args: args{
+				config: map[string]interface{}{
+					"id":   3,
+					"name": "test1-1",
+					"config": map[string]interface{}{
+						"test":  "test22222",
+						"test1": "test232323",
+						"test3": "test333323",
+					},
+					"deleted": 0,
+				},
+				provider: provider.NewMockCfgProvider(
+					[]models.Model{
+						&models.Configuration{
+							ID:   1,
+							Name: "test",
+							Config: map[string]interface{}{
+								"test":  "test",
+								"test1": "test1",
+							},
+							Deleted: 0,
+						},
+						&models.Configuration{
+							ID:   2,
+							Name: "test2",
+							Config: map[string]interface{}{
+								"test2":  "test2",
+								"test11": "test11",
+							},
+							Deleted: 0,
+						},
+					},
+				),
+				urlValues: map[string]string{},
+			},
+			wantResponseBody: map[string]interface{}{
+				"status":  false,
+				"message": consts.IdIsEmptyResp,
+			},
+			wantResponseCode: 400,
+		},
+		{
+			name: "update config - id is not number",
+			args: args{
+				config: map[string]interface{}{
+					"id":   3,
+					"name": "test1-1",
+					"config": map[string]interface{}{
+						"test":  "test22222",
+						"test1": "test232323",
+						"test3": "test333323",
+					},
+					"deleted": 0,
+				},
+				provider: provider.NewMockCfgProvider(
+					[]models.Model{
+						&models.Configuration{
+							ID:   1,
+							Name: "test",
+							Config: map[string]interface{}{
+								"test":  "test",
+								"test1": "test1",
+							},
+							Deleted: 0,
+						},
+						&models.Configuration{
+							ID:   2,
+							Name: "test2",
+							Config: map[string]interface{}{
+								"test2":  "test2",
+								"test11": "test11",
+							},
+							Deleted: 0,
+						},
+					},
+				),
+				urlValues: map[string]string{
+					"id": "test",
+				},
+			},
+			wantResponseBody: map[string]interface{}{
+				"status":  false,
+				"message": consts.IdIsNotNumberResp,
+			},
+			wantResponseCode: 400,
+		},
+		{
+			name: "update config - bad input data",
+			args: args{
+				config: map[string]interface{}{},
+				provider: provider.NewMockCfgProvider(
+					[]models.Model{
+						&models.Configuration{
+							ID:   1,
+							Name: "test",
+							Config: map[string]interface{}{
+								"test":  "test",
+								"test1": "test1",
+							},
+							Deleted: 0,
+						},
+						&models.Configuration{
+							ID:   2,
+							Name: "test2",
+							Config: map[string]interface{}{
+								"test2":  "test2",
+								"test11": "test11",
+							},
+							Deleted: 0,
+						},
+					},
+				),
+				urlValues: map[string]string{
+					"id": "1",
+				},
+			},
+			wantResponseBody: map[string]interface{}{
+				"status":  false,
+				"message": consts.BadInputDataResp,
+			},
+			wantResponseCode: 400,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			request, err := http.NewRequest(http.MethodGet, consts.UrlCfgV1, nil)
+			bData, err := json.Marshal(tt.args.config)
+			if err != nil {
+				t.Fatalf("Marshal request form:%v", err)
+			}
+
+			buffer := bytes.NewBuffer(bData)
+
+			request, err := http.NewRequest(http.MethodGet, consts.UrlCfgV1, buffer)
 			if err != nil {
 				t.Fatalf("New Request error: %v", err)
 			}

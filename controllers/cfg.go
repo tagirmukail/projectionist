@@ -31,7 +31,7 @@ func NewCfg(provider provider.IDBProvider) http.HandlerFunc {
 
 		var form = make(map[string]interface{})
 		var err = json.NewDecoder(r.Body).Decode(&form)
-		if err != nil {
+		if err != nil || len(form) == 0 {
 			w.WriteHeader(http.StatusBadRequest)
 			utils.JsonRespond(w, utils.Message(false, consts.BadInputDataResp))
 			return
@@ -195,16 +195,10 @@ func UpdateCfg(provider provider.IDBProvider) http.HandlerFunc {
 			return
 		}
 
-		err, exist := provider.IsExistByName(&cfg)
-		if !exist {
-			w.WriteHeader(http.StatusNotFound)
-			utils.JsonRespond(w, utils.Message(false, consts.NotExistResp))
-			return
-		}
-
+		err = cfg.Validate()
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			utils.JsonRespond(w, utils.Message(false, consts.SmtWhenWrongResp))
+			w.WriteHeader(http.StatusBadRequest)
+			utils.JsonRespond(w, utils.Message(false, consts.BadInputDataResp))
 			return
 		}
 
@@ -215,8 +209,10 @@ func UpdateCfg(provider provider.IDBProvider) http.HandlerFunc {
 				utils.JsonRespond(w, utils.Message(false, consts.NotExistResp))
 				return
 			}
+
+			log.Printf("UpdateCfg() provider.Update() id:%d error: %v", id, err)
 			w.WriteHeader(http.StatusInternalServerError)
-			utils.JsonRespond(w, utils.Message(false, consts.NotUpdatedResp))
+			utils.JsonRespond(w, utils.Message(false, consts.SmtWhenWrongResp))
 			return
 		}
 
@@ -250,6 +246,8 @@ func DeleteCfg(provider provider.IDBProvider) http.HandlerFunc {
 				utils.JsonRespond(w, utils.Message(false, consts.NotExistResp))
 				return
 			}
+
+			log.Printf("DeleteCfg() provider.Delete() id:%d error: %v", id, err)
 			w.WriteHeader(http.StatusInternalServerError)
 			utils.JsonRespond(w, utils.Message(false, consts.NotDeletedResp))
 			return

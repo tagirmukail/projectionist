@@ -80,7 +80,7 @@ func (c *MockCfgProvider) Count(m models.Model) (int, error) {
 func (c *MockCfgProvider) Pagination(m models.Model, start, stop int) ([]models.Model, error) {
 	var result []models.Model
 	c.RLock()
-	var lastCfgNumber = len(c.configs) - 1
+	var lastCfgNumber = len(c.configs)
 	c.RUnlock()
 	if stop > lastCfgNumber {
 		stop = lastCfgNumber
@@ -91,11 +91,11 @@ func (c *MockCfgProvider) Pagination(m models.Model, start, stop int) ([]models.
 	}
 
 	var maxResultCount = stop - start
+	var resultCount int
 
 	c.RLock()
 	for i := 0; i < len(c.configs); i++ {
-		var count = len(result)
-		if count >= maxResultCount {
+		if resultCount >= maxResultCount {
 			break
 		}
 
@@ -103,7 +103,12 @@ func (c *MockCfgProvider) Pagination(m models.Model, start, stop int) ([]models.
 			continue
 		}
 
+		if i < start {
+			continue
+		}
+
 		result = append(result, c.configs[i])
+		resultCount++
 	}
 	c.RUnlock()
 
@@ -128,6 +133,7 @@ func (c *MockCfgProvider) Delete(m models.Model, id int) error {
 	for i, model := range c.configs {
 		if model.GetID() == id {
 			c.configs[i].SetDeleted()
+			c.configs = append(c.configs[:i], c.configs[i+1:]...)
 			return nil
 		}
 	}

@@ -139,11 +139,11 @@ func (c *CfgProvider) Pagination(m models.Model, start, stop int) ([]models.Mode
 	}
 
 	var maxResultCount = stop - start
+	var resultCount int
 
 	c.RLock()
 	for i := 0; i < len(c.configs); i++ {
-		var count = len(result)
-		if count >= maxResultCount {
+		if resultCount >= maxResultCount {
 			break
 		}
 
@@ -151,7 +151,12 @@ func (c *CfgProvider) Pagination(m models.Model, start, stop int) ([]models.Mode
 			continue
 		}
 
+		if i < start {
+			continue
+		}
+
 		result = append(result, c.configs[i])
+		resultCount++
 	}
 	c.RUnlock()
 
@@ -180,6 +185,7 @@ func (c *CfgProvider) Delete(m models.Model, id int) error {
 	for i, model := range c.configs {
 		if model.GetID() == id {
 			c.configs[i].SetDeleted()
+			c.configs = append(c.configs[:i], c.configs[i+1:]...)
 			break
 		}
 	}
