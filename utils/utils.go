@@ -69,24 +69,11 @@ func CreateDir(path string) error {
 	return err
 }
 
-// SaveJsonFile save data in json file
-func SaveJsonFile(path string, form map[string]interface{}) error {
-	data, err := json.Marshal(form)
-	if err != nil {
-		return err
-	}
-
-	f, err := os.Create(path)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	_, err = f.Write(data)
-	return err
-}
-
 func Pagination(page, count int) (start, end int) {
+	if page == 0 {
+		return 0, 0
+	}
+
 	start = (page - 1) * count
 	end = start + count
 	return start, end
