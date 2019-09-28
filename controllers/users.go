@@ -167,6 +167,18 @@ func GetUserList(dbProvider provider.IDBProvider) http.HandlerFunc {
 			return
 		}
 
+		var result = []*models.User{}
+		for _, iUser := range userModels {
+			user, ok := iUser.(*models.User)
+			if !ok {
+				continue
+			}
+
+			user.Password = ""
+
+			result = append(result, user)
+		}
+
 		var respond = utils.Message(true, "")
 		respond[consts.KEY_USERS] = userModels
 		utils.JsonRespond(w, respond)

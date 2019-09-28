@@ -62,7 +62,7 @@ func (u *User) IsExistByName() (error, bool) {
 	}
 
 	if username == "" {
-		return fmt.Errorf("User with username %s not exist", u.Username), false
+		return nil, false
 	}
 
 	return nil, true
