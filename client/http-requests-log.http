@@ -1,0 +1,576 @@
+
+GET http://localhost:8080/v1/api/user?page=1&count=10
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjR9.SM9-6Gk-dlqeOy-ggkh8SVLGfutHdw2HTN_B4tpL2Gw
+
+<> 2019-09-28T095801.200.json
+
+###
+
+GET http://localhost:8080/v1/api/user/4
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjR9.SM9-6Gk-dlqeOy-ggkh8SVLGfutHdw2HTN_B4tpL2Gw
+
+<> 2019-09-28T095740.400.txt
+
+###
+
+POST http://localhost:8080/v1/api/user
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjR9.SM9-6Gk-dlqeOy-ggkh8SVLGfutHdw2HTN_B4tpL2Gw
+
+{
+  "username": "test1",
+  "role": 0,
+  "password": "nogiruki"
+}
+
+<> 2019-09-28T094849.200.json
+
+###
+
+POST http://localhost:8080/v1/api/login
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "username": "test",
+  "password": "nogiruki"
+}
+
+<> 2019-09-28T094619.200.json
+
+###
+
+POST http://localhost:8080/v1/api/login
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "username": "test",
+  "password": "nogiruki"
+}
+
+<> 2019-09-28T094523.200.json
+
+###
+
+POST http://localhost:8080/v1/api/user
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "username": "test",
+  "role": 1,
+  "password": "nogiruki"
+}
+
+<> 2019-09-28T094503.200.json
+
+###
+
+POST http://localhost:8080/v1/api/user
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "username": "test",
+  "role": 1,
+  "password": "nogiruki"
+}
+
+<> 2019-09-28T093626.500.txt
+
+###
+
+POST http://localhost:8080/v1/api/user
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "username": "test",
+  "role": 1,
+  "password": "nogiruki"
+}
+
+<> 2019-09-28T093553.403.txt
+
+###
+
+POST http://localhost:8080/v1/api/login
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "username": "test",
+  "password": "nogiruki"
+}
+
+<> 2019-09-28T093036.401.txt
+
+###
+
+POST http://localhost:8080/v1/api/login
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "username": "test",
+  "password": "nogiruki"
+}
+
+<> 2019-09-28T092502.401.txt
+
+###
+
+POST http://localhost:8080/v1/api/login
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "username": "test",
+  "password": "nogiruki"
+}
+
+<> 2019-09-28T092246.401.txt
+
+###
+
+POST http://localhost:8080/v1/api/login
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "username": "test1",
+  "password": "nogiruki"
+}
+
+<> 2019-09-28T091820.401.txt
+
+###
+
+POST http://localhost:8080/v1/api/login
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "username": "test1",
+  "password": "nogiruki"
+}
+
+###
+
+POST http://localhost:8080/v1/api/login
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "username": "test1",
+  "password": "nogiruki"
+}
+
+###
+
+POST http://localhost:8080/v1/api/login
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "username": "test1",
+  "password": "nogiruki"
+}
+
+<> 2019-09-15T040904.401.txt
+
+###
+
+POST http://localhost:8080/v1/api/login
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "username": "test1",
+  "password": "nogiruki"
+}
+
+<> 2019-09-15T040854.401.txt
+
+###
+
+POST http://localhost:8080/v1/api/login
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "username": "test",
+  "password": "nogiruki"
+}
+
+<> 2019-09-15T040803.401.txt
+
+###
+
+GET http://localhost:8080/v1/api/login
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "username": "test",
+  "password": "nogiruki"
+}
+
+###
+
+GET http://localhost:8080/v1/api/user?page=2&count=10
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjJ9.FzEzMe1Je_oiEbmgKg5q_lSFUA5WtK1uWbIChje4xME
+
+<> 2019-07-03T125627.200.txt
+
+###
+
+GET http://localhost:8080/v1/api/user?page=1&count=10
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjJ9.FzEzMe1Je_oiEbmgKg5q_lSFUA5WtK1uWbIChje4xME
+
+<> 2019-07-03T125538.200.json
+
+###
+
+GET http://localhost:8080/v1/api/user?page=1&count10=
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjJ9.FzEzMe1Je_oiEbmgKg5q_lSFUA5WtK1uWbIChje4xME
+
+<> 2019-07-03T125518.400.txt
+
+###
+
+GET http://localhost:8080/v1/api/user/1
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjJ9.FzEzMe1Je_oiEbmgKg5q_lSFUA5WtK1uWbIChje4xME
+
+<> 2019-07-03T125425.200.json
+
+###
+
+POST http://localhost:8080/v1/api/login
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{"username":"test1","password":"test1"}
+
+<> 2019-07-03T125357.200.json
+
+###
+
+GET http://localhost:8080/v1/api/user/1
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjJ9.FzEzMe1Je_oiEbmgKg5q_lSFUA5WtK1uWbIChje4xME
+
+<> 2019-06-26T112555.200.json
+
+###
+
+POST http://localhost:8080/v1/api/login
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{"username":"test1","password":"test1"}
+
+<> 2019-06-26T112545.200.json
+
+###
+
+GET http://localhost:8080/v1/api/user/1
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+Cookie: session=MTU2MTU4MDI2MHxHTkdydkFFWlV2WDJseXUzSUF3RjRwTnB4OXgtTzBoMURESG9TblpPbkpiSXU4ZWhVYk5RcjJydjNHeGRob2ZZVVhHTXyBx6PiQhZ7b4gPy1wxTLR9-ek0AcyOn0WCg_V5Kd_pjg==; Path=/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjJ9.FzEzMe1Je_oiEbmgKg5q_lSFUA5WtK1uWbIChje4xME
+
+###
+
+POST http://localhost:8080/v1/api/login
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{"username":"test1","password":"test1"}
+
+<> 2019-06-26T111740.200.json
+
+###
+
+GET http://localhost:8080/v1/api/user/1
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+Cookie: session=MTU2MTU3OTgyMnxLbWI2dEVwbnNGQW1rUk5YdXVkX295eFZaMVB6QW5RZDV5YmhfQkJ3SVRXeXJRWk1sUHUyU2ZmTkZqSmFFb1JWT2VIZnyyZ45f0WRp-wfKKaruuoR1TkscMTs0I5wqQmJcDgzLoA==; Path=/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjJ9.FzEzMe1Je_oiEbmgKg5q_lSFUA5WtK1uWbIChje4xME
+
+<> 2019-06-26T111724.401.txt
+
+###
+
+GET http://localhost:8080/v1/api/user/1
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+Cookie: session=MTU2MTU3OTgyMnxLbWI2dEVwbnNGQW1rUk5YdXVkX295eFZaMVB6QW5RZDV5YmhfQkJ3SVRXeXJRWk1sUHUyU2ZmTkZqSmFFb1JWT2VIZnyyZ45f0WRp-wfKKaruuoR1TkscMTs0I5wqQmJcDgzLoA==; Path=/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjJ9.FzEzMe1Je_oiEbmgKg5q_lSFUA5WtK1uWbIChje4xME
+
+<> 2019-06-26T111704.401.txt
+
+###
+
+GET http://localhost:8080/v1/api/user/1
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+Cookie: session=MTU2MTU3OTgyMnxLbWI2dEVwbnNGQW1rUk5YdXVkX295eFZaMVB6QW5RZDV5YmhfQkJ3SVRXeXJRWk1sUHUyU2ZmTkZqSmFFb1JWT2VIZnyyZ45f0WRp-wfKKaruuoR1TkscMTs0I5wqQmJcDgzLoA==; Path=/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjJ9.FzEzMe1Je_oiEbmgKg5q_lSFUA5WtK1uWbIChje4xME
+
+###
+
+POST http://localhost:8080/v1/api/login
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{"username":"test1","password":"test1"}
+
+<> 2019-06-26T111022.200.json
+
+###
+
+POST http://localhost:8080/v1/api/login
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{"username":"test1","password":"test1"}
+
+<> 2019-06-26T110718.200.json
+
+###
+
+GET http://localhost:8080/v1/api/user/1
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+Cookie: session=MTU2MTU3OTQ0MXxCTEZNTi1QQUtIaDh3WldhSXd4T3ZfZUk4RWJ6aEhtd0k0RGtfZm14bGZveE1ZdDFqNWw3UXYzMFZOWV9iaWpJd3oydHxx2wOAUuKK718Xjl-aDDXmDJhncj2pqILHUaU76J7A3w==; Path=/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjJ9.FzEzMe1Je_oiEbmgKg5q_lSFUA5WtK1uWbIChje4xME
+
+###
+
+GET http://localhost:8080/v1/api/user/1
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+Cookie: session=MTU2MTU3OTQ0MXxCTEZNTi1QQUtIaDh3WldhSXd4T3ZfZUk4RWJ6aEhtd0k0RGtfZm14bGZveE1ZdDFqNWw3UXYzMFZOWV9iaWpJd3oydHxx2wOAUuKK718Xjl-aDDXmDJhncj2pqILHUaU76J7A3w==; Path=/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjJ9.FzEzMe1Je_oiEbmgKg5q_lSFUA5WtK1uWbIChje4xME
+
+###
+
+GET http://localhost:8080/v1/api/user/1
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+Cookie: session=MTU2MTU3OTQ0MXxCTEZNTi1QQUtIaDh3WldhSXd4T3ZfZUk4RWJ6aEhtd0k0RGtfZm14bGZveE1ZdDFqNWw3UXYzMFZOWV9iaWpJd3oydHxx2wOAUuKK718Xjl-aDDXmDJhncj2pqILHUaU76J7A3w==; Path=/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjJ9.FzEzMe1Je_oiEbmgKg5q_lSFUA5WtK1uWbIChje4xME
+
+###
+
+POST http://localhost:8080/v1/api/login
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{"username":"test1","password":"test1"}
+
+<> 2019-06-26T110401.200.json
+
+###
+
+GET http://localhost:8080/v1/api/user/1
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+Cookie: session=MTU2MTA2Mzk2MXxJeGRNVU1DeGlhMGd1Rk9wSkZ5bWxRVDV1Tzh6M1lUb09CekNwVExmYUNPdDFKQllCWXlPVERkUF80V0tFTDZRM3prMnzX7yUVmZeuV71u2sGyAsg9aadL7F3Vyyvij18FKpf5Pg==; Path=/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjJ9.FzEzMe1Je_oiEbmgKg5q_lSFUA5WtK1uWbIChje4xME
+
+<> 2019-06-20T115323.200.json
+
+###
+
+POST http://localhost:8080/v1/api/login
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{"username":"test1","password":"test1"}
+
+<> 2019-06-20T115241.200.json
+
+###
+
+GET http://localhost:8080/v1/api/user/1
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+Cookie: session=MTU2MDU5OTQwOXxLTG1RbkJjbl94dEdHUVNjNDdzNDdMUldaaU4wUXcxcTFGMWtaQlJheEhFcjdzU3dUeDBsV0xENC1DeHF3NVQwWXRTanyWUzzJOwBf1-yHqyaLU0nIj18GDEew8pUKrxp_ZMbDBQ==; Path=/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjJ9.FzEzMe1Je_oiEbmgKg5q_lSFUA5WtK1uWbIChje4xME
+
+<> 2019-06-20T115145.401.txt
+
+###
+
+POST http://localhost:8080/v1/api/login
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{"username":"test1","password":"test1"}
+
+<> 2019-06-20T115057.200.json
+
+###
+
+POST http://localhost:8080/v1/api/login
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{"username":"test1","password":"test1"}
+
+<> 2019-06-20T114534.200.json
+
+###
+
+POST http://localhost:8080/v1/api/login
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{"username":"test1","password":"test1"}
+
+<> 2019-06-15T043436.200.json
+
+###
+
+GET http://localhost:8080/v1/api/user/1
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+Cookie: session=MTU2MDU5OTQwOXxLTG1RbkJjbl94dEdHUVNjNDdzNDdMUldaaU4wUXcxcTFGMWtaQlJheEhFcjdzU3dUeDBsV0xENC1DeHF3NVQwWXRTanyWUzzJOwBf1-yHqyaLU0nIj18GDEew8pUKrxp_ZMbDBQ==; Path=/
+
+<> 2019-06-15T025104.200.json
+
+###
+
+POST http://localhost:8080/v1/api/login
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{"username":"test1","password":"test1"}
+
+<> 2019-06-15T025009.200.json
+
+###
+
+GET http://localhost:8080/v1/api/user/1
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+Cookie: session=MTU2MDU5OTA2NHxXOThUZWNKODA1RDdxUTJiYlJzTUZ2Y1YyX21vNUlmRU1keUtoWXQzSFJ0aXF4V3Z5Z0tFaG1xYk1kYlN0SkxhZkU5SXyTYY-e9yHMfjIdNUyTDO6ZESRKug1YWsTZgxcl4d3Kbw==; Path=/
+
+<> 2019-06-15T024959.401.txt
+
+###
+
+POST http://localhost:8080/v1/api/login
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{"username":"test1","password":"test1"}
+
+<> 2019-06-15T024954.200.json
+
+###
+
+GET http://localhost:8080/v1/api/user/1
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+Cookie: session=MTU2MDU5OTA2NHxXOThUZWNKODA1RDdxUTJiYlJzTUZ2Y1YyX21vNUlmRU1keUtoWXQzSFJ0aXF4V3Z5Z0tFaG1xYk1kYlN0SkxhZkU5SXyTYY-e9yHMfjIdNUyTDO6ZESRKug1YWsTZgxcl4d3Kbw==; Path=/
+
+###
+
+POST http://localhost:8080/v1/api/login
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{"username":"test1","password":"test1"}
+
+<> 2019-06-15T024424.200.json
+
+###
+
+GET http://localhost:8080/v1/api/user/1
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+Cookie: session=MTU2MDA3NzQ4MHxsSm5oaXBaLUFfdmlaczdiS1ZfbWZKd1VDTEhwMFMyc0diQ2pTTTQ2ck5qdHFfQmRhQUJ4cnFNZDV1NjZNVG0tM3ZzNXwmeZixTAHNbfi36AL-ifSidF_5dX_yd_WsYhmC8oQoQg==; Path=/
+
+<> 2019-06-15T024321.401.txt
+
+###
+
+POST http://localhost:8080/v1/api/user
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+Cookie: session=MTU2MDA3NzQ4MHxsSm5oaXBaLUFfdmlaczdiS1ZfbWZKd1VDTEhwMFMyc0diQ2pTTTQ2ck5qdHFfQmRhQUJ4cnFNZDV1NjZNVG0tM3ZzNXwmeZixTAHNbfi36AL-ifSidF_5dX_yd_WsYhmC8oQoQg==; Path=/
+
+{"username":"test4","password":"test4","role":0}
+
+<> 2019-06-09T015359.200.json
+
+###
+
