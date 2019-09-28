@@ -77,18 +77,17 @@ func (c *CfgProvider) Save(m models.Model) error {
 	return m.Save()
 }
 
-func (c *CfgProvider) GetByName(m models.Model, name string) error {
+func (c *CfgProvider) GetByName(m models.Model, name string) (models.Model, error) {
 	c.RLock()
 	for _, model := range c.configs {
 		if name == model.GetName() {
-			m = model
 			c.RUnlock()
-			return nil
+			return model, nil
 		}
 	}
 	c.RUnlock()
 
-	return m.GetByName(name)
+	return m, m.GetByName(name)
 }
 
 func (c *CfgProvider) GetByID(m models.Model, id int64) (models.Model, error) {

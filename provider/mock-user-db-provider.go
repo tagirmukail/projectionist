@@ -1,7 +1,10 @@
 package provider
 
 import (
+	"database/sql"
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
+	"log"
 	"projectionist/models"
 	"sort"
 )
@@ -11,8 +14,22 @@ type MockUsersDBProvider struct {
 }
 
 func NewMockUsersDBProvider(users map[int]models.Model) *MockUsersDBProvider {
+	var resultUsers = make(map[int]models.Model)
+	for id, iUser := range users {
+		user, ok := iUser.(*models.User)
+		if !ok {
+			continue
+		}
+		passwd, err := bcrypt.GenerateFromPassword([]byte(user.Password), 8)
+		if err != nil {
+			log.Println(err)
+			return nil
+		}
+		user.Password = string(passwd)
+		resultUsers[id] = user
+	}
 	return &MockUsersDBProvider{
-		users: users,
+		users: resultUsers,
 	}
 }
 
@@ -32,6 +49,12 @@ func (m *MockUsersDBProvider) Save(model models.Model) error {
 
 	user.ID = maxID + 1
 
+	passwd, err := bcrypt.GenerateFromPassword([]byte(user.Password), 8)
+	if err != nil {
+		return err
+	}
+	user.Password = string(passwd)
+
 	m.users[user.ID] = user
 
 	return nil
@@ -43,20 +66,15 @@ func (m *MockUsersDBProvider) GetByID(model models.Model, id int64) (models.Mode
 	return existModel, nil
 }
 
-func (m *MockUsersDBProvider) GetByName(model models.Model, name string) error {
+func (m *MockUsersDBProvider) GetByName(model models.Model, name string) (models.Model, error) {
 	for _, iUser := range m.users {
-		var user, ok = iUser.(*models.User)
-		if !ok {
-			return fmt.Errorf("model %v not user", iUser)
-		}
-
-		if user.Username == name {
-			model = user
-			return nil
+		if iUser.GetName() == name {
+			model = iUser
+			return model, nil
 		}
 	}
 
-	return fmt.Errorf("model with name %s not exist", name)
+	return nil, sql.ErrNoRows
 }
 
 func (m *MockUsersDBProvider) IsExistByName(model models.Model) (error, bool) {

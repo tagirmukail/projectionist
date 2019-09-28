@@ -24,13 +24,13 @@ func (p *DBProvider) Save(m models.Model) error {
 	return m.Save()
 }
 
-func (p *DBProvider) GetByName(m models.Model, name string) error {
+func (p *DBProvider) GetByName(m models.Model, name string) (models.Model, error) {
 	err := m.SetDBCtx(p.db)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return m.GetByName(name)
+	return m, m.GetByName(name)
 }
 
 func (p *DBProvider) GetByID(m models.Model, id int64) (models.Model, error) {

@@ -29,18 +29,17 @@ func (c *MockCfgProvider) Save(m models.Model) error {
 	return nil
 }
 
-func (c *MockCfgProvider) GetByName(m models.Model, name string) error {
+func (c *MockCfgProvider) GetByName(m models.Model, name string) (models.Model, error) {
 	c.RLock()
 	for _, model := range c.configs {
 		if name == model.GetName() {
-			m = model
 			c.RUnlock()
-			return nil
+			return model, nil
 		}
 	}
 	c.RUnlock()
 
-	return consts.ErrNotFound
+	return nil, consts.ErrNotFound
 }
 
 func (c *MockCfgProvider) GetByID(m models.Model, id int64) (models.Model, error) {
