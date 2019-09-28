@@ -1,4 +1,4 @@
-import { FETCH_USERS, FETCH_USERS_START } from '../types/actionTypes'
+import { FETCH_LOGIN, FETCH_LOGIN_START } from "../types/actionTypes";
 
 const initialState = {
     wait: false,
@@ -7,15 +7,15 @@ const initialState = {
     }
 }
 
-const users = (state = initialState, action) => {
+const login = (state = initialState, action) => {
     switch (action.type) {
-        case FETCH_USERS_START:
+        case FETCH_LOGIN_START:
             return { wait: true, result: { data: [] } };
-        case FETCH_USERS:
+        case FETCH_LOGIN:
             return { wait: false, result: action.payload };
         default:
             return state;
     }
 }
 
-export default users;
+export default login;

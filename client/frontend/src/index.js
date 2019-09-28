@@ -3,15 +3,21 @@ import ReactDOM from 'react-dom';
 import { createStore, applyMiddleware, combineReducers } from 'redux';
 import { Provider } from 'react-redux';
 import thunk from 'redux-thunk';
-import App from './App';
+import { BrowserRouter } from 'react-router-dom';
+import MainRouter from './router';
 import './index.css';
-
-import * as reducers from './reducers'
+import reducers from './reducers/reducers'
+import { Header } from './header';
 
 const store = createStore(combineReducers(reducers), applyMiddleware(thunk));
 
 ReactDOM.render(
     <Provider store={store}>
-        <App />
+        <BrowserRouter>
+            <div>
+                <Header />
+                <MainRouter />
+            </div>
+        </BrowserRouter>
     </Provider>, document.getElementById('root')
 );

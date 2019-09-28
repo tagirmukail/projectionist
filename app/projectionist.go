@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 
 	"projectionist/config"
@@ -53,14 +54,21 @@ func (a *App) Run() {
 	router := a.newRouter()
 
 	log.Printf("Start service on: %v", address)
-	log.Fatal(http.ListenAndServe(address, router))
+	log.Fatal(http.ListenAndServe(
+		address, 
+		handlers.CORS(
+			handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}), 
+			handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}),
+			handlers.AllowedOrigins(a.cfg.AccessAddresses),
+			)(router)),
+		)
 }
 
 func (a *App) newRouter() *mux.Router {
 	router := mux.NewRouter()
 	router.Use(
 		middleware.JwtAuthentication(a.cfg.TokenSecretKey),
-		middleware.AccessControllAllows(a.cfg.AccessAddresses),
+		// middleware.AccessControllAllows(a.cfg.AccessAddresses),
 	)
 
 	router.HandleFunc(consts.UrlApiLoginV1, controllers.LoginApi(a.dbProvider, a.cfg.TokenSecretKey)).Methods(http.MethodPost)

@@ -1,0 +1,4 @@
+export const FETCH_USERS_START = "FETCH_USERS_START";
+export const FETCH_USERS = "FETCH_USERS";
+export const FETCH_LOGIN_START = "FETCH_LOGIN_START";
+export const FETCH_LOGIN = "FETCH_LOGIN";

@@ -26,8 +26,14 @@ var AccessControllAllows = func(accessAddresses []string) mux.MiddlewareFunc {
 				return
 			}
 
-			w.Header().Add("Access-Control-Allow-Origin", addrs)
-			w.Header().Add("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Cookie")
+			w.Header().Set("Access-Control-Allow-Origin", addrs)
+			w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+			w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Cookie")
+
+			if r.Method == http.MethodOptions {
+				return
+			}
+
 			next.ServeHTTP(w, r)
 		})
 	}
