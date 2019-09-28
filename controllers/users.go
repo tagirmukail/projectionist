@@ -77,7 +77,7 @@ func GetUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 
 		var userModel models.Model
 
-		userModel, err = dbProvider.GetByID(userModel, int64(id))
+		userModel, err = dbProvider.GetByID(&models.User{}, int64(id))
 		if err != nil {
 			if err == sql.ErrNoRows {
 				w.WriteHeader(http.StatusNotFound)
