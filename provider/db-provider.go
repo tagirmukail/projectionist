@@ -3,7 +3,10 @@ package provider
 import (
 	"database/sql"
 	"projectionist/models"
+	"time"
 )
+
+const writeTimeout = 100 * time.Millisecond
 
 type DBProvider struct {
 	db *sql.DB
@@ -21,7 +24,7 @@ func (p *DBProvider) Save(m models.Model) error {
 		return err
 	}
 
-	return m.Save()
+	return saveProcessErrBusy(m.Save)
 }
 
 func (p *DBProvider) GetByName(m models.Model, name string) (models.Model, error) {
@@ -75,7 +78,7 @@ func (p *DBProvider) Update(m models.Model, id int) error {
 		return err
 	}
 
-	return m.Update(id)
+	return processErrBusy(id, m.Update)
 }
 
 func (p *DBProvider) Delete(m models.Model, id int) error {
@@ -84,5 +87,5 @@ func (p *DBProvider) Delete(m models.Model, id int) error {
 		return err
 	}
 
-	return m.Delete(id)
+	return processErrBusy(id, m.Delete)
 }

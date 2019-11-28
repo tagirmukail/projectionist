@@ -36,10 +36,10 @@ func (u *User) SetDBCtx(iDB interface{}) error {
 
 func (u *User) Validate() error {
 	if u.Username == "" || len(u.Username) > 255 {
-		return fmt.Errorf("Invalid username")
+		return fmt.Errorf("invalid username")
 	}
 	if u.Password == "" || len(u.Password) > 500 {
-		return fmt.Errorf("Invalid password")
+		return fmt.Errorf("invalid password")
 	}
 
 	switch u.Role {
@@ -48,7 +48,7 @@ func (u *User) Validate() error {
 	case int(SuperAdmin):
 		break
 	default:
-		return fmt.Errorf("Invalid role")
+		return fmt.Errorf("invalid role")
 	}
 
 	return nil
