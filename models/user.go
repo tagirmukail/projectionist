@@ -185,9 +185,20 @@ func (u *User) Update(id int) error {
 }
 
 func (u *User) Delete(id int) error {
-	query := fmt.Sprintf("DELETE FROM users WHERE id=%d", id)
+	res, err := u.dbCtx.Exec("DELETE FROM users WHERE id=?", id)
+	if err != nil {
+		return err
+	}
 
-	_, err := u.dbCtx.Exec(query)
+	rowCount, err := res.LastInsertId()
+	if err != nil {
+		return err
+	}
+
+	if rowCount == 0 {
+		return fmt.Errorf("user with id %v not deleted", id)
+	}
+
 	return err
 }
 

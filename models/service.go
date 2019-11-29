@@ -106,13 +106,32 @@ func (s *Service) Save() error {
 	return nil
 }
 
-func (s *Service) GetByName(name string) error                { return nil }
-func (s *Service) GetByID(id int64) error                     { return nil }
+// TODO implement this method
+func (s *Service) GetByName(name string) error { return nil }
+
+// TODO implement this method
+func (s *Service) GetByID(id int64) error { return nil }
+
+// TODO implement this method
 func (s *Service) Pagination(start, end int) ([]Model, error) { return nil, nil }
-func (s *Service) Update(id int) error                        { return nil }
-func (s *Service) Delete(id int) error                        { return nil }
-func (s *Service) GetID() int                                 { return 0 }
-func (s *Service) SetID(id int)                               { return }
-func (s *Service) GetName() string                            { return "" }
-func (s *Service) SetDeleted()                                {}
-func (s *Service) IsDeleted() bool                            { return false }
+
+// TODO implement this method
+func (s *Service) Update(id int) error { return nil }
+
+// TODO implement this method
+func (s *Service) Delete(id int) error { return nil }
+
+// TODO implement this method
+func (s *Service) GetID() int { return 0 }
+
+// TODO implement this method
+func (s *Service) SetID(id int) { return }
+
+// TODO implement this method
+func (s *Service) GetName() string { return "" }
+
+// TODO implement this method
+func (s *Service) SetDeleted() {}
+
+// TODO implement this method
+func (s *Service) IsDeleted() bool { return false }
