@@ -1,6 +1,7 @@
 package models
 
 import (
+	"database/sql"
 	"fmt"
 	"net/url"
 )
@@ -14,6 +15,7 @@ const (
 )
 
 type Service struct {
+	dbCtx     *sql.DB
 	ID        int    `json:"id";db:"id"`
 	Name      string `json:"name";db:"name"`
 	Link      string `json:"link";db:"link"`
@@ -32,8 +34,13 @@ func (s *Service) Validate() error {
 		return fmt.Errorf("invalid service link")
 	}
 
-	if _, err := url.ParseRequestURI(s.Link); err != nil {
+	u, err := url.ParseRequestURI(s.Link)
+	if err != nil {
 		return fmt.Errorf("link %s error: %v", s.Link, err)
+	}
+
+	if u.Host == "" {
+		return fmt.Errorf("link %s not valid", s.Link)
 	}
 
 	if s.Token == "" || len(s.Token) > 255 {
@@ -50,3 +57,62 @@ func (s *Service) Validate() error {
 
 	return nil
 }
+
+func (s *Service) SetDBCtx(iDB interface{}) error {
+	db, ok := iDB.(*sql.DB)
+	if !ok {
+		return fmt.Errorf("%v is not sql.DB", iDB)
+	}
+
+	s.dbCtx = db
+
+	return nil
+}
+func (s *Service) IsExistByName() (error, bool) {
+	var serviceName string
+
+	var err = s.dbCtx.QueryRow("SELECT name FROM services where name=?", s.Name).Scan(&serviceName)
+	if err != nil && err != sql.ErrNoRows {
+		return err, false
+	}
+
+	if serviceName == "" {
+		return nil, false
+	}
+
+	return nil, true
+}
+func (s *Service) Count() (int, error) { return 0, nil }
+func (s *Service) Save() error {
+	result, err := s.dbCtx.Exec(
+		"INSERT INTO services (name, link, Token, frequency, status) VALUES (?,?,?,?,?)",
+		s.Name,
+		s.Link,
+		s.Token,
+		s.Frequency,
+		s.Status,
+	)
+	if err != nil {
+		return err
+	}
+
+	lastInsertID, err := result.LastInsertId()
+	if err != nil {
+		return err
+	}
+
+	s.ID = int(lastInsertID)
+
+	return nil
+}
+
+func (s *Service) GetByName(name string) error                { return nil }
+func (s *Service) GetByID(id int64) error                     { return nil }
+func (s *Service) Pagination(start, end int) ([]Model, error) { return nil, nil }
+func (s *Service) Update(id int) error                        { return nil }
+func (s *Service) Delete(id int) error                        { return nil }
+func (s *Service) GetID() int                                 { return 0 }
+func (s *Service) SetID(id int)                               { return }
+func (s *Service) GetName() string                            { return "" }
+func (s *Service) SetDeleted()                                {}
+func (s *Service) IsDeleted() bool                            { return false }

@@ -55,13 +55,13 @@ func (a *App) Run() {
 
 	log.Printf("Start service on: %v", address)
 	log.Fatal(http.ListenAndServe(
-		address, 
+		address,
 		handlers.CORS(
-			handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}), 
+			handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}),
 			handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}),
 			handlers.AllowedOrigins(a.cfg.AccessAddresses),
-			)(router)),
-		)
+		)(router)),
+	)
 }
 
 func (a *App) newRouter() *mux.Router {
@@ -85,11 +85,11 @@ func (a *App) newRouter() *mux.Router {
 	router.HandleFunc(consts.UrlCfgV1+"/{id}", controllers.UpdateCfg(a.cfgProvider)).Methods(http.MethodPut)
 	router.HandleFunc(consts.UrlCfgV1+"/{id}", controllers.DeleteCfg(a.cfgProvider)).Methods(http.MethodDelete)
 
-	router.HandleFunc(consts.UrlServiceV1, controllers.NewService()).Methods(http.MethodPost)
-	router.HandleFunc(consts.UrlServiceV1+"/{id}", controllers.GetService()).Methods(http.MethodGet)
-	router.HandleFunc(consts.UrlServiceV1, controllers.GetServiceList()).Methods(http.MethodGet)
-	router.HandleFunc(consts.UrlServiceV1+"/{id}", controllers.UpdateService()).Methods(http.MethodPut)
-	router.HandleFunc(consts.UrlServiceV1+"/{id}", controllers.DeleteService()).Methods(http.MethodDelete)
+	router.HandleFunc(consts.UrlServiceV1, controllers.NewService(a.dbProvider)).Methods(http.MethodPost)
+	router.HandleFunc(consts.UrlServiceV1+"/{id}", controllers.GetService(a.dbProvider)).Methods(http.MethodGet)
+	router.HandleFunc(consts.UrlServiceV1, controllers.GetServiceList(a.dbProvider)).Methods(http.MethodGet)
+	router.HandleFunc(consts.UrlServiceV1+"/{id}", controllers.UpdateService(a.dbProvider)).Methods(http.MethodPut)
+	router.HandleFunc(consts.UrlServiceV1+"/{id}", controllers.DeleteService(a.dbProvider)).Methods(http.MethodDelete)
 
 	return router
 }
