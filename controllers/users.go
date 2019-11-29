@@ -209,26 +209,15 @@ func UpdateUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 			return
 		}
 
-		err, exist := dbProvider.IsExistByName(&user)
-		if !exist {
-			w.WriteHeader(http.StatusNotFound)
-			utils.JsonRespond(w, utils.Message(false, consts.NotExistResp))
-			return
-		}
-
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			utils.JsonRespond(w, utils.Message(false, consts.SmtWhenWrongResp))
-			return
-		}
-
 		err = dbProvider.Update(&user, id)
 		if err != nil {
+			log.Printf("dbProvider.Update error: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			utils.JsonRespond(w, utils.Message(false, consts.NotUpdatedResp))
 			return
 		}
 
+		user.ID = id
 		w.WriteHeader(http.StatusOK)
 		var respond = utils.Message(true, "user updated")
 		respond["user"] = user

@@ -18,7 +18,7 @@ type User struct {
 	dbCtx    *sql.DB
 	ID       int    `json:"id";db:"id"`
 	Username string `json:"username";db:"username"`
-	Role     int    `json:"role";db:"role"`
+	Role     Role   `json:"role";db:"role"`
 	Password string `db:"password"`
 	Token    string `json:"token"`
 	Deleted  int    `json:"deleted";db:"deleted"`
@@ -44,9 +44,9 @@ func (u *User) Validate() error {
 	}
 
 	switch u.Role {
-	case int(Admin):
+	case Admin:
 		break
-	case int(SuperAdmin):
+	case SuperAdmin:
 		break
 	default:
 		return fmt.Errorf("invalid role")
@@ -147,23 +147,41 @@ func (u *User) Pagination(start, end int) ([]Model, error) {
 	return result, nil
 }
 
-// Fixme: fix this logic - remove fmt.sprintf
 func (u *User) Update(id int) error {
-	query := "UPDATE users SET"
+	var args []interface{}
+
+	query := `UPDATE users SET `
 
 	if u.Username != "" {
-		query += fmt.Sprintf("username='%s', ", u.Username)
+		query += `username=?, `
+		args = append(args, u.Username)
 	}
 
-	query += fmt.Sprintf("role=%d ", u.Role)
+	if u.Role != Role(0) {
+		query += `role=? `
+		args = append(args, u.Role)
+	}
 
-	query += fmt.Sprintf("WHERE id=%d", id)
+	query += `WHERE id=?`
+	args = append(args, id)
 
-	_, err := u.dbCtx.Exec(
-		query,
+	res, err := u.dbCtx.Exec(
+		query, args...,
 	)
+	if err != nil {
+		return err
+	}
 
-	return err
+	rowsCount, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsCount == 0 {
+		return fmt.Errorf("user with id %d not updated", id)
+	}
+
+	return nil
 }
 
 func (u *User) Delete(id int) error {
