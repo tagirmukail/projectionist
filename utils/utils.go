@@ -3,12 +3,15 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
+	"log"
 	"net/http"
 	"os"
-	"projectionist/consts"
 	"strconv"
 	"strings"
+
+	"github.com/gorilla/mux"
+
+	"projectionist/consts"
 )
 
 // Message - represent struct of http response
@@ -17,9 +20,12 @@ func Message(status bool, message string) map[string]interface{} {
 }
 
 // JsonRespond - send for http client response
-func JsonRespond(w http.ResponseWriter, data map[string]interface{}) error {
+func JsonRespond(w http.ResponseWriter, data map[string]interface{}) {
 	w.Header().Add("Content-Type", "application/json")
-	return json.NewEncoder(w).Encode(data)
+	err := json.NewEncoder(w).Encode(data)
+	if err != nil {
+		log.Printf("error: json respond:%v", err)
+	}
 }
 
 // GetIDFromReq get id parameter from request
