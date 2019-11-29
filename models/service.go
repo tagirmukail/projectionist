@@ -82,7 +82,15 @@ func (s *Service) IsExistByName() (error, bool) {
 
 	return nil, true
 }
-func (s *Service) Count() (int, error) { return 0, nil }
+func (s *Service) Count() (int, error) {
+	var count int
+	var err = s.dbCtx.QueryRow("SELECT count(id) FROM services").Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
 func (s *Service) Save() error {
 	result, err := s.dbCtx.Exec(
 		"INSERT INTO services (name, link, Token, frequency, status) VALUES (?,?,?,?,?)",
@@ -112,8 +120,36 @@ func (s *Service) GetByName(name string) error { return nil }
 // TODO implement this method
 func (s *Service) GetByID(id int64) error { return nil }
 
-// TODO implement this method
-func (s *Service) Pagination(start, end int) ([]Model, error) { return nil, nil }
+func (s *Service) Pagination(start, end int) ([]Model, error) {
+	var result []Model
+
+	raws, err := s.dbCtx.Query(
+		"SELECT id, name, link, Token, frequency, status, deleted FROM services ORDER BY id ASC limit ?, ?",
+		start, end)
+	if err != nil {
+		return nil, err
+	}
+
+	for raws.Next() {
+		var service = &Service{}
+		err = raws.Scan(
+			&service.ID,
+			&service.Name,
+			&service.Link,
+			&service.Token,
+			&service.Frequency,
+			&service.Status,
+			&service.Deleted,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		result = append(result, service)
+	}
+
+	return result, nil
+}
 
 // TODO implement this method
 func (s *Service) Update(id int) error { return nil }
