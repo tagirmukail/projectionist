@@ -128,7 +128,8 @@ func (u *User) GetByID(id int64) error {
 func (u *User) Pagination(start, end int) ([]Model, error) {
 	var result []Model
 
-	raws, err := u.dbCtx.Query("SELECT id, username, role, deleted FROM users ORDER BY id ASC limit ?, ?", start, end)
+	raws, err := u.dbCtx.Query(
+		"SELECT id, username, role, deleted FROM users ORDER BY id ASC limit ?, ?", start, end)
 	if err != nil {
 		return result, err
 	}

@@ -1,9 +1,12 @@
 package controllers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
+	"strings"
+
 	"projectionist/consts"
 	"projectionist/models"
 	"projectionist/provider"
@@ -61,13 +64,111 @@ func NewService(dbProvider provider.IDBProvider) http.HandlerFunc {
 
 func GetService(dbProvider provider.IDBProvider) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//TODO: implement
+		var id, err = utils.GetIDFromReq(r)
+		if err != nil {
+			if err.Error() == strings.ToLower(consts.IdIsEmptyResp) {
+				w.WriteHeader(http.StatusBadRequest)
+				utils.JsonRespond(w, utils.Message(false, consts.IdIsEmptyResp))
+				return
+			}
+			w.WriteHeader(http.StatusBadRequest)
+			utils.JsonRespond(w, utils.Message(false, consts.IdIsNotNumberResp))
+			return
+		}
+
+		serviceModel, err := dbProvider.GetByID(&models.Service{}, int64(id))
+		if err != nil {
+			if err == sql.ErrNoRows {
+				log.Printf("service with id %v not exist", id)
+				w.WriteHeader(http.StatusNotFound)
+				utils.JsonRespond(w, utils.Message(false, consts.NotExistResp))
+				return
+			}
+			log.Printf("GetService() error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			utils.JsonRespond(w, utils.Message(false, consts.SmtWhenWrongResp))
+			return
+		}
+
+		service, ok := serviceModel.(*models.Service)
+		if !ok {
+			w.WriteHeader(http.StatusNotFound)
+			utils.JsonRespond(w, utils.Message(false, consts.NotExistResp))
+			return
+		}
+
+		var respond = utils.Message(true, "")
+		respond["service"] = service
+		utils.JsonRespond(w, respond)
 	})
 }
 
 func GetServiceList(dbProvider provider.IDBProvider) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//TODO: implement
+		page, count, err := utils.GetPageAndCountFromReq(r)
+		if err != nil {
+			if err.Error() == strings.ToLower(consts.PageAndCountRequiredResp) {
+				w.WriteHeader(http.StatusBadRequest)
+				utils.JsonRespond(w, utils.Message(false, consts.PageAndCountRequiredResp))
+				return
+			}
+
+			if err.Error() == strings.ToLower(consts.PageMustNumberResp) {
+				w.WriteHeader(http.StatusBadRequest)
+				utils.JsonRespond(w, utils.Message(false, consts.PageMustNumberResp))
+				return
+			}
+
+			if err.Error() == strings.ToLower(consts.CountMustNumberResp) {
+				w.WriteHeader(http.StatusBadRequest)
+				utils.JsonRespond(w, utils.Message(false, consts.CountMustNumberResp))
+				return
+			}
+
+			w.WriteHeader(http.StatusInternalServerError)
+			utils.JsonRespond(w, utils.Message(false, consts.SmtWhenWrongResp))
+			return
+		}
+
+		if page <= 0 {
+			w.WriteHeader(http.StatusOK)
+			respond := utils.Message(true, "")
+			utils.JsonRespond(w, respond)
+			return
+		}
+
+		start, end := utils.Pagination(page, count)
+
+		countAllServices, err := dbProvider.Count(&models.Service{})
+		if err != nil {
+			log.Printf("dbProvider.Count() count all services error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			utils.JsonRespond(w, utils.Message(false, consts.SmtWhenWrongResp))
+			return
+		}
+
+		if start > countAllServices {
+			w.WriteHeader(http.StatusOK)
+			respond := utils.Message(true, "")
+			utils.JsonRespond(w, respond)
+			return
+		}
+
+		if end > countAllServices {
+			end = countAllServices
+		}
+
+		serviceModels, err := dbProvider.Pagination(&models.Service{}, start, end)
+		if err != nil {
+			log.Printf("dbProvider.Pagination() pagination by services error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			utils.JsonRespond(w, utils.Message(false, consts.SmtWhenWrongResp))
+			return
+		}
+
+		var respond = utils.Message(true, "")
+		respond[consts.KEY_SERVICES] = serviceModels
+		utils.JsonRespond(w, respond)
 	})
 }
 
