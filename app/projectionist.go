@@ -68,7 +68,6 @@ func (a *App) newRouter() *mux.Router {
 	router := mux.NewRouter()
 	router.Use(
 		middleware.JwtAuthentication(a.cfg.TokenSecretKey),
-		// middleware.AccessControllAllows(a.cfg.AccessAddresses),
 	)
 
 	router.HandleFunc(consts.UrlApiLoginV1, controllers.LoginApi(a.dbProvider, a.cfg.TokenSecretKey)).Methods(http.MethodPost)
