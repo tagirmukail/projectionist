@@ -9,7 +9,8 @@ import (
 type Role int
 
 const (
-	Admin Role = iota
+	_ Role = iota
+	Admin
 	SuperAdmin
 )
 
@@ -146,8 +147,9 @@ func (u *User) Pagination(start, end int) ([]Model, error) {
 	return result, nil
 }
 
+// Fixme: fix this logic - remove fmt.sprintf
 func (u *User) Update(id int) error {
-	query := "UPDATE users SET "
+	query := "UPDATE users SET"
 
 	if u.Username != "" {
 		query += fmt.Sprintf("username='%s', ", u.Username)
