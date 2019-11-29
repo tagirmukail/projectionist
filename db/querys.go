@@ -23,8 +23,8 @@ create table if not exists services
 		constraint services_pk
 			primary key autoincrement,
 	name    TEXT(255) not null,
-	link    TEXT(255) not null,
-	Token   TEXT(255) not null,
+	link    TEXT(1000) not null,
+	Token   TEXT(1000) not null,
 	frequency int default 100,
 	status  int default 1,
 	deleted int default 0
