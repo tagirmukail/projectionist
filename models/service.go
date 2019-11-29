@@ -117,8 +117,18 @@ func (s *Service) Save() error {
 // TODO implement this method
 func (s *Service) GetByName(name string) error { return nil }
 
-// TODO implement this method
-func (s *Service) GetByID(id int64) error { return nil }
+func (s *Service) GetByID(id int64) error {
+	return s.dbCtx.QueryRow(
+		"SELECT id, name, link, Token, frequency, status, deleted FROM services WHERE id=?", id).Scan(
+		&s.ID,
+		&s.Name,
+		&s.Link,
+		&s.Token,
+		&s.Frequency,
+		&s.Status,
+		&s.Deleted,
+	)
+}
 
 func (s *Service) Pagination(start, end int) ([]Model, error) {
 	var result []Model
@@ -157,8 +167,9 @@ func (s *Service) Update(id int) error { return nil }
 // TODO implement this method
 func (s *Service) Delete(id int) error { return nil }
 
-// TODO implement this method
-func (s *Service) GetID() int { return 0 }
+func (s *Service) GetID() int {
+	return s.ID
+}
 
 // TODO implement this method
 func (s *Service) SetID(id int) { return }

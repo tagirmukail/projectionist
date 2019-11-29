@@ -80,6 +80,7 @@ func GetUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 		userModel, err = dbProvider.GetByID(&models.User{}, int64(id))
 		if err != nil {
 			if err == sql.ErrNoRows {
+				log.Printf("user with id %v not exist", id)
 				w.WriteHeader(http.StatusNotFound)
 				utils.JsonRespond(w, utils.Message(false, consts.NotExistResp))
 				return
