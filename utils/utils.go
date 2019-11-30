@@ -91,3 +91,27 @@ func GetFileName(path string) string {
 	var lastElem = parths[lastElemIndx]
 	return lastElem
 }
+
+func CheckHealthStatusCode(status int, name string) error {
+	if status == http.StatusOK {
+		return nil
+	}
+
+	if status == http.StatusUnauthorized {
+		return fmt.Errorf("service %s not authorized", name)
+	}
+
+	if status == http.StatusBadRequest {
+		return fmt.Errorf("service %s request bad", name)
+	}
+
+	if status == http.StatusNotFound {
+		return fmt.Errorf("may be service %s is dead", name)
+	}
+
+	if status >= 500 {
+		return fmt.Errorf("service %s dead", name)
+	}
+
+	return fmt.Errorf("service %s something when wrong", name)
+}

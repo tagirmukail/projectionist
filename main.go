@@ -7,7 +7,7 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 
-	"projectionist/app"
+	"projectionist/apps"
 	"projectionist/config"
 )
 
@@ -34,9 +34,15 @@ func main() {
 	}
 	defer sqlDB.Close()
 
-	application, err := app.NewApp(cfg, sqlDB)
+	health := apps.NewHealthCkeck(cfg, sqlDB)
+	err = health.Run()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("health-check: error: %v", err)
+	}
+
+	application, err := apps.NewApp(cfg, sqlDB)
+	if err != nil {
+		log.Fatalf("projectionist-api: error: %v", err)
 	}
 
 	application.Run()
