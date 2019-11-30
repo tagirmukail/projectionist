@@ -16,6 +16,11 @@ func createTableServices(sqlDB *sql.DB) error {
 	return err
 }
 
+func createTableEmails(sqlDB *sql.DB) error {
+	_, err := sqlDB.Exec(CREATE_TBL_EMAILS)
+	return err
+}
+
 func InitTables(sqlDB *sql.DB) error {
 	var err error
 	if err = createTableServices(sqlDB); err != nil {
@@ -23,6 +28,10 @@ func InitTables(sqlDB *sql.DB) error {
 	}
 
 	if err = createTableUsers(sqlDB); err != nil {
+		return err
+	}
+
+	if err = createTableEmails(sqlDB); err != nil {
 		return err
 	}
 

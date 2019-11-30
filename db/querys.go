@@ -33,4 +33,15 @@ create table if not exists services
 create unique index if not exists services_name_uindex
     on services (name);
 `
+
+	CREATE_TBL_EMAILS = `
+create table if not exists emails
+(
+	id INTEGER
+		constraint emails_pk
+			primary key autoincrement,
+	service_id INTEGER,
+	email TEXT(500) not null
+);
+`
 )
