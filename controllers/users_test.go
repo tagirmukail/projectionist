@@ -43,7 +43,7 @@ func TestNewUser(t *testing.T) {
 				user: models.User{
 					Username: "test1",
 					Password: "testPass",
-					Role:     0,
+					Role:     1,
 				},
 			},
 			wantResponseBody: map[string]interface{}{
@@ -223,7 +223,7 @@ func TestNewUser(t *testing.T) {
 				user: models.User{
 					Username: "test",
 					Password: "testPass",
-					Role:     0,
+					Role:     1,
 				},
 			},
 			wantResponseBody: map[string]interface{}{
@@ -1438,115 +1438,6 @@ func TestUpdateUser(t *testing.T) {
 				},
 			},
 			wantResponseCode: 200,
-		},
-		{
-			name: "user not updated, this user by name not exist",
-			args: args{
-				dbProvider: provider.NewMockUsersDBProvider(
-					map[int]models.Model{
-						1: &models.User{
-							ID:       1,
-							Username: "test1",
-							Role:     0,
-							Password: "testPass1",
-							Deleted:  0,
-						},
-						2: &models.User{
-							ID:       2,
-							Username: "test2",
-							Role:     0,
-							Password: "testPass2",
-							Deleted:  0,
-						},
-						3: &models.User{
-							ID:       3,
-							Username: "test3",
-							Role:     0,
-							Password: "testPass3",
-							Deleted:  0,
-						},
-						4: &models.User{
-							ID:       4,
-							Username: "test4",
-							Role:     0,
-							Password: "testPass4",
-							Deleted:  0,
-						},
-						5: &models.User{
-							ID:       5,
-							Username: "test5",
-							Role:     0,
-							Password: "testPass5",
-							Deleted:  0,
-						},
-						6: &models.User{
-							ID:       6,
-							Username: "test6",
-							Role:     0,
-							Password: "testPass6",
-							Deleted:  0,
-						},
-						7: &models.User{
-							ID:       7,
-							Username: "test7",
-							Role:     0,
-							Password: "testPass7",
-							Deleted:  0,
-						},
-						8: &models.User{
-							ID:       8,
-							Username: "test8",
-							Role:     0,
-							Password: "testPass8",
-							Deleted:  0,
-						},
-						9: &models.User{
-							ID:       9,
-							Username: "test9",
-							Role:     0,
-							Password: "testPass9",
-							Deleted:  0,
-						},
-						10: &models.User{
-							ID:       10,
-							Username: "test10",
-							Role:     0,
-							Password: "testPass10",
-							Deleted:  0,
-						},
-						11: &models.User{
-							ID:       11,
-							Username: "test11",
-							Role:     0,
-							Password: "testPass11",
-							Deleted:  0,
-						},
-						12: &models.User{
-							ID:       12,
-							Username: "test12",
-							Role:     0,
-							Password: "testPass12",
-							Deleted:  0,
-						},
-					},
-				),
-				user: map[string]interface{}{
-					"id":       1,
-					"username": "test11111",
-					"role":     1,
-					"Password": "testPass11111",
-					"token":    "testToken",
-					"deleted":  0,
-				},
-				urlValues: map[string]string{
-					"id": "1",
-				},
-			},
-			wantResponseBody: map[string]interface{}{
-				"status":  false,
-				"message": consts.NotExistResp,
-			},
-			wantResponseCode: 404,
 		},
 		{
 			name: "user not updated, id is empty",
