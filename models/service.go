@@ -17,13 +17,14 @@ const (
 
 type Service struct {
 	dbCtx     *sql.DB
-	ID        int    `json:"id";db:"id"`
-	Name      string `json:"name";db:"name"`
-	Link      string `json:"link";db:"link"`
-	Token     string `json:"token";db:"token"`
-	Frequency int    `json:"frequency";db:"frequency"`
-	Status    Status `json:"status";db:"status"`
-	Deleted   int    `json:"deleted";db:"deleted"`
+	ID        int     `json:"id";db:"id"`
+	Name      string  `json:"name";db:"name"`
+	Link      string  `json:"link";db:"link"`
+	Token     string  `json:"token";db:"token"`
+	Frequency int     `json:"frequency";db:"frequency"`
+	Status    Status  `json:"status";db:"status"`
+	Deleted   int     `json:"deleted";db:"deleted"`
+	Emails    []Email `json:"emails"`
 }
 
 func (s *Service) Validate() error {
@@ -54,6 +55,13 @@ func (s *Service) Validate() error {
 
 	if s.Status != Alive && s.Status != Dead {
 		return fmt.Errorf("invalid service status: %v", s.Status)
+	}
+
+	for _, email := range s.Emails {
+		err = email.Validate()
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -166,6 +174,11 @@ func (s *Service) Pagination(start, end int) ([]Model, error) {
 			return nil, err
 		}
 
+		service.Emails, err = s.GetEmails()
+		if err != nil {
+			return nil, err
+		}
+
 		result = append(result, service)
 	}
 
@@ -212,23 +225,39 @@ func (s *Service) Update(id int) error {
 	queryBuild.WriteString(` WHERE id=?`)
 	args = append(args, id)
 
+	tx, err := s.dbCtx.Begin()
+	if err != nil {
+		return err
+	}
+
 	res, err := s.dbCtx.Exec(
 		queryBuild.String(), args...,
 	)
 	if err != nil {
+		tx.Rollback()
 		return err
 	}
 
 	rowsCount, err := res.RowsAffected()
 	if err != nil {
+		tx.Rollback()
 		return err
 	}
 
 	if rowsCount == 0 {
+		tx.Rollback()
 		return fmt.Errorf("service with id %d not updated", id)
 	}
 
-	return nil
+	for _, email := range s.Emails {
+		err = email.Save()
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	return tx.Commit()
 }
 
 func (s *Service) Delete(id int) error {
@@ -267,4 +296,29 @@ func (s *Service) SetDeleted() {
 
 func (s *Service) IsDeleted() bool {
 	return s.Deleted > 0
+}
+
+func (s *Service) GetEmails() ([]Email, error) {
+	s.Emails = []Email{}
+
+	rows, err := s.dbCtx.Query("SELECT * FROM emails WHERE service_id=?", s.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		var email = Email{}
+		err = rows.Scan(
+			&email.ID,
+			&email.ServiceID,
+			&email.Email,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		s.Emails = append(s.Emails, email)
+	}
+
+	return s.Emails, nil
 }
