@@ -174,12 +174,64 @@ func GetServiceList(dbProvider provider.IDBProvider) http.HandlerFunc {
 
 func UpdateService(dbProvider provider.IDBProvider) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//TODO: implement
+		var id, err = utils.GetIDFromReq(r)
+		if err != nil {
+			if err.Error() == strings.ToLower(consts.IdIsEmptyResp) {
+				w.WriteHeader(http.StatusBadRequest)
+				utils.JsonRespond(w, utils.Message(false, consts.IdIsEmptyResp))
+				return
+			}
+			w.WriteHeader(http.StatusBadRequest)
+			utils.JsonRespond(w, utils.Message(false, consts.IdIsNotNumberResp))
+			return
+		}
+
+		var service = models.Service{ID: id}
+		err = json.NewDecoder(r.Body).Decode(&service)
+		if err != nil {
+			log.Printf("decode request body error: %v", err)
+			w.WriteHeader(http.StatusBadRequest)
+			utils.JsonRespond(w, utils.Message(false, consts.BadInputDataResp))
+			return
+		}
+
+		err = dbProvider.Update(&service, id)
+		if err != nil {
+			log.Printf("dbProvider.Update update service error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			utils.JsonRespond(w, utils.Message(false, consts.NotUpdatedResp))
+			return
+		}
+
+		var respond = utils.Message(true, "service updated")
+		respond["service"] = service
+		utils.JsonRespond(w, respond)
 	})
 }
 
 func DeleteService(dbProvider provider.IDBProvider) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//TODO: implement
+		var id, err = utils.GetIDFromReq(r)
+		if err != nil {
+			if err.Error() == strings.ToLower(consts.IdIsEmptyResp) {
+				w.WriteHeader(http.StatusBadRequest)
+				utils.JsonRespond(w, utils.Message(false, consts.IdIsEmptyResp))
+				return
+			}
+			w.WriteHeader(http.StatusBadRequest)
+			utils.JsonRespond(w, utils.Message(false, consts.IdIsNotNumberResp))
+			return
+		}
+
+		var service = &models.Service{}
+		err = dbProvider.Delete(service, id)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			utils.JsonRespond(w, utils.Message(false, consts.NotDeletedResp))
+			return
+		}
+
+		var respond = utils.Message(true, "service deleted")
+		utils.JsonRespond(w, respond)
 	})
 }

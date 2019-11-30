@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net/url"
+	"strings"
 )
 
 type Status int
@@ -114,8 +115,18 @@ func (s *Service) Save() error {
 	return nil
 }
 
-// TODO implement this method
-func (s *Service) GetByName(name string) error { return nil }
+func (s *Service) GetByName(name string) error {
+	return s.dbCtx.QueryRow(
+		"SELECT id, name, link, Token, frequency, status, deleted FROM services WHERE name=?", name).Scan(
+		&s.ID,
+		&s.Name,
+		&s.Link,
+		&s.Token,
+		&s.Frequency,
+		&s.Status,
+		&s.Deleted,
+	)
+}
 
 func (s *Service) GetByID(id int64) error {
 	return s.dbCtx.QueryRow(
@@ -161,24 +172,99 @@ func (s *Service) Pagination(start, end int) ([]Model, error) {
 	return result, nil
 }
 
-// TODO implement this method
-func (s *Service) Update(id int) error { return nil }
+func (s *Service) Update(id int) error {
+	var queryBuild = strings.Builder{}
 
-// TODO implement this method
-func (s *Service) Delete(id int) error { return nil }
+	var args []interface{}
+
+	queryBuild.WriteString(`UPDATE services SET `)
+
+	if s.Name != "" {
+		queryBuild.WriteString(`name=?, `)
+		args = append(args, s.Name)
+	}
+
+	if s.Link != "" {
+		queryBuild.WriteString(`link=?, `)
+		args = append(args, s.Link)
+	}
+
+	if s.Token != "" {
+		queryBuild.WriteString(`token=?, `)
+		args = append(args, s.Token)
+	}
+
+	if s.Frequency > 0 {
+		queryBuild.WriteString(`frequency=?, `)
+		args = append(args, s.Frequency)
+	}
+
+	if s.Status == Alive || s.Status == Dead {
+		queryBuild.WriteString(`status=?, `)
+		args = append(args, s.Status)
+	}
+
+	query := strings.TrimRight(queryBuild.String(), ", ")
+
+	queryBuild.Reset()
+	queryBuild.WriteString(query)
+
+	queryBuild.WriteString(` WHERE id=?`)
+	args = append(args, id)
+
+	res, err := s.dbCtx.Exec(
+		queryBuild.String(), args...,
+	)
+	if err != nil {
+		return err
+	}
+
+	rowsCount, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsCount == 0 {
+		return fmt.Errorf("service with id %d not updated", id)
+	}
+
+	return nil
+}
+
+func (s *Service) Delete(id int) error {
+	res, err := s.dbCtx.Exec("DELETE FROM services WHERE id=?", id)
+	if err != nil {
+		return err
+	}
+
+	rowsCount, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsCount == 0 {
+		return fmt.Errorf("service with id %d not deleted", id)
+	}
+
+	return nil
+}
 
 func (s *Service) GetID() int {
 	return s.ID
 }
 
-// TODO implement this method
-func (s *Service) SetID(id int) { return }
+func (s *Service) SetID(id int) {
+	s.ID = id
+}
 
-// TODO implement this method
-func (s *Service) GetName() string { return "" }
+func (s *Service) GetName() string {
+	return s.Name
+}
 
-// TODO implement this method
-func (s *Service) SetDeleted() {}
+func (s *Service) SetDeleted() {
+	s.Deleted = 1
+}
 
-// TODO implement this method
-func (s *Service) IsDeleted() bool { return false }
+func (s *Service) IsDeleted() bool {
+	return s.Deleted > 0
+}
