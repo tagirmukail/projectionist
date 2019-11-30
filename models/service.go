@@ -174,7 +174,12 @@ func (s *Service) Pagination(start, end int) ([]Model, error) {
 			return nil, err
 		}
 
-		service.Emails, err = s.GetEmails()
+		err = service.SetDBCtx(s.dbCtx)
+		if err != nil {
+			return nil, err
+		}
+
+		service.Emails, err = service.GetEmails()
 		if err != nil {
 			return nil, err
 		}
@@ -186,6 +191,149 @@ func (s *Service) Pagination(start, end int) ([]Model, error) {
 }
 
 func (s *Service) Update(id int) error {
+	var query, args = s.buildServiceUpdateQuery(id)
+
+	tx, err := s.dbCtx.Begin()
+	if err != nil {
+		return err
+	}
+
+	var res sql.Result
+	if len(args) > 1 {
+		res, err = s.dbCtx.Exec(
+			query, args...,
+		)
+		if err != nil {
+			tx.Rollback()
+			return fmt.Errorf("update query: %s error: %v", query, err)
+		}
+
+		rowsCount, err := res.RowsAffected()
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+
+		if rowsCount == 0 {
+			tx.Rollback()
+			return fmt.Errorf("service with id %d not updated", id)
+		}
+	}
+
+	for _, email := range s.Emails {
+		err = email.SetDBCtx(s.dbCtx)
+		if err != nil {
+			return err
+		}
+		err = email.Validate()
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+
+		if email.ServiceID != id {
+			tx.Rollback()
+			return fmt.Errorf("invalid service id for email %v", email.Email)
+		}
+		err = email.Save()
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	return tx.Commit()
+}
+
+func (s *Service) Delete(id int) error {
+	tx, err := s.dbCtx.Begin()
+	if err != nil {
+		return err
+	}
+
+	res, err := s.dbCtx.Exec("DELETE FROM services WHERE id=?", id)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	rowsCount, err := res.RowsAffected()
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if rowsCount == 0 {
+		tx.Rollback()
+		return fmt.Errorf("service with id %d not deleted", id)
+	}
+
+	res, err = s.dbCtx.Exec("DELETE FROM emails WHERE service_id=?", id)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	rowsCount, err = res.RowsAffected()
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if rowsCount == 0 {
+		tx.Rollback()
+		return fmt.Errorf("for service %d emails not deleted", id)
+	}
+
+	return tx.Commit()
+}
+
+func (s *Service) GetID() int {
+	return s.ID
+}
+
+func (s *Service) SetID(id int) {
+	s.ID = id
+}
+
+func (s *Service) GetName() string {
+	return s.Name
+}
+
+func (s *Service) SetDeleted() {
+	s.Deleted = 1
+}
+
+func (s *Service) IsDeleted() bool {
+	return s.Deleted > 0
+}
+
+func (s *Service) GetEmails() ([]Email, error) {
+	s.Emails = []Email{}
+
+	rows, err := s.dbCtx.Query("SELECT id, service_id, email FROM emails WHERE service_id=?", s.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		var email = Email{}
+		err = rows.Scan(
+			&email.ID,
+			&email.ServiceID,
+			&email.Email,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		s.Emails = append(s.Emails, email)
+	}
+
+	return s.Emails, nil
+}
+
+func (s *Service) buildServiceUpdateQuery(id int) (string, []interface{}) {
 	var queryBuild = strings.Builder{}
 
 	var args []interface{}
@@ -225,100 +373,5 @@ func (s *Service) Update(id int) error {
 	queryBuild.WriteString(` WHERE id=?`)
 	args = append(args, id)
 
-	tx, err := s.dbCtx.Begin()
-	if err != nil {
-		return err
-	}
-
-	res, err := s.dbCtx.Exec(
-		queryBuild.String(), args...,
-	)
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	rowsCount, err := res.RowsAffected()
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	if rowsCount == 0 {
-		tx.Rollback()
-		return fmt.Errorf("service with id %d not updated", id)
-	}
-
-	for _, email := range s.Emails {
-		err = email.Save()
-		if err != nil {
-			tx.Rollback()
-			return err
-		}
-	}
-
-	return tx.Commit()
-}
-
-func (s *Service) Delete(id int) error {
-	res, err := s.dbCtx.Exec("DELETE FROM services WHERE id=?", id)
-	if err != nil {
-		return err
-	}
-
-	rowsCount, err := res.RowsAffected()
-	if err != nil {
-		return err
-	}
-
-	if rowsCount == 0 {
-		return fmt.Errorf("service with id %d not deleted", id)
-	}
-
-	return nil
-}
-
-func (s *Service) GetID() int {
-	return s.ID
-}
-
-func (s *Service) SetID(id int) {
-	s.ID = id
-}
-
-func (s *Service) GetName() string {
-	return s.Name
-}
-
-func (s *Service) SetDeleted() {
-	s.Deleted = 1
-}
-
-func (s *Service) IsDeleted() bool {
-	return s.Deleted > 0
-}
-
-func (s *Service) GetEmails() ([]Email, error) {
-	s.Emails = []Email{}
-
-	rows, err := s.dbCtx.Query("SELECT * FROM emails WHERE service_id=?", s.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	for rows.Next() {
-		var email = Email{}
-		err = rows.Scan(
-			&email.ID,
-			&email.ServiceID,
-			&email.Email,
-		)
-		if err != nil {
-			return nil, err
-		}
-
-		s.Emails = append(s.Emails, email)
-	}
-
-	return s.Emails, nil
+	return queryBuild.String(), args
 }

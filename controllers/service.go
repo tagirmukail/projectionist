@@ -97,6 +97,14 @@ func GetService(dbProvider provider.IDBProvider) http.HandlerFunc {
 			return
 		}
 
+		service.Emails, err = service.GetEmails()
+		if err != nil {
+			log.Printf("error: get service: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			utils.JsonRespond(w, utils.Message(false, consts.SmtWhenWrongResp))
+			return
+		}
+
 		var respond = utils.Message(true, "")
 		respond["service"] = service
 		utils.JsonRespond(w, respond)

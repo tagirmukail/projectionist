@@ -17,8 +17,8 @@ type Config struct {
 }
 
 type HealthCheckCfg struct {
-	HealthCheckConnCount   int `json:"health_check_conn_count"`
-	HealthCheckConnTimeout int `json:"health_check_conn_timeout"`
+	ConnCount   int `json:"conn_count"`
+	ConnTimeout int `json:"conn_timeout"`
 }
 
 func NewConfig() (*Config, error) {
@@ -63,11 +63,11 @@ func (cfg *Config) checkDefault() {
 		cfg.AccessAddresses = []string{"*"}
 	}
 
-	if cfg.HealthCheck.HealthCheckConnCount == 0 {
-		cfg.HealthCheck.HealthCheckConnCount = 10
+	if cfg.HealthCheck.ConnCount == 0 {
+		cfg.HealthCheck.ConnCount = 10
 	}
 
-	if cfg.HealthCheck.HealthCheckConnTimeout == 0 {
-		cfg.HealthCheck.HealthCheckConnTimeout = 30
+	if cfg.HealthCheck.ConnTimeout == 0 {
+		cfg.HealthCheck.ConnTimeout = 30
 	}
 }

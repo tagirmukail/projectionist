@@ -53,21 +53,37 @@ func (e *Email) GetByName(name string) error                    { return nil }
 func (e *Email) GetByID(id int64) error                         { return nil }
 func (e *Email) Pagination(start int, end int) ([]Model, error) { return nil, nil }
 func (e *Email) Update(id int) error                            { return nil }
-func (e *Email) Delete(id int) error                            { return nil }
-func (e *Email) GetID() int                                     { return e.ID }
-func (e *Email) SetID(id int)                                   { e.ID = id }
-func (e *Email) GetName() string                                { return e.Email }
-func (e *Email) SetDeleted()                                    {}
-func (e *Email) IsDeleted() bool                                { return false }
+func (e *Email) Delete(id int) error {
+	res, err := e.dbCtx.Exec("DELETE FROM emails WHERE id=?", id)
+	if err != nil {
+		return err
+	}
+
+	rowsCount, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsCount == 0 {
+		return fmt.Errorf("email with id %d not deleted", id)
+	}
+
+	return nil
+}
+func (e *Email) GetID() int      { return e.ID }
+func (e *Email) SetID(id int)    { e.ID = id }
+func (e *Email) GetName() string { return e.Email }
+func (e *Email) SetDeleted()     {}
+func (e *Email) IsDeleted() bool { return false }
 
 func insertEmail(db *sql.DB, email Email) error {
 	var existEmail Email
-	err := db.QueryRow("SELECT * FROM emails WHERE service_id=? AND email=?", email.ServiceID, email.Email).Scan(
+	err := db.QueryRow("SELECT id, service_id, email FROM emails WHERE service_id=? AND email=?", email.ServiceID, email.Email).Scan(
 		&existEmail.ID,
 		&existEmail.ServiceID,
 		&existEmail.Email,
 	)
-	if err != nil {
+	if err != nil && err != sql.ErrNoRows {
 		return err
 	}
 

@@ -23,8 +23,8 @@ func NewHealthCkeck(cfg *config.Config, db *sql.DB) *HealthCheck {
 	return &HealthCheck{
 		cfg: cfg,
 		httpClient: http.Client{Transport: &http.Transport{
-			MaxIdleConns:       cfg.HealthCheck.HealthCheckConnCount,
-			IdleConnTimeout:    time.Duration(cfg.HealthCheck.HealthCheckConnTimeout) * time.Second,
+			MaxIdleConns:       cfg.HealthCheck.ConnCount,
+			IdleConnTimeout:    time.Duration(cfg.HealthCheck.ConnTimeout) * time.Second,
 			DisableCompression: true,
 		}},
 		dbProvider: provider.NewDBProvider(db),

@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"flag"
 	"log"
 	"runtime/debug"
 
@@ -20,6 +21,11 @@ func main() {
 		}
 	}()
 
+	var checker bool
+	flag.BoolVar(&checker, "checker", true, "Enable or disable health check")
+	flag.Parse()
+
+	log.Printf("Health check mode: %v\n", checker)
 	cfg, err := config.NewConfig()
 	if err != nil {
 		log.Fatalln(err)
@@ -35,9 +41,11 @@ func main() {
 	defer sqlDB.Close()
 
 	health := apps.NewHealthCkeck(cfg, sqlDB)
-	err = health.Run()
-	if err != nil {
-		log.Fatalf("health-check: error: %v", err)
+	if checker {
+		err = health.Run()
+		if err != nil {
+			log.Fatalf("health-check: error: %v", err)
+		}
 	}
 
 	application, err := apps.NewApp(cfg, sqlDB)

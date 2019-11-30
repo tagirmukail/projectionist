@@ -151,31 +151,9 @@ func (u *User) Pagination(start, end int) ([]Model, error) {
 }
 
 func (u *User) Update(id int) error {
-	var queryBuild = strings.Builder{}
-	var args []interface{}
-
-	queryBuild.WriteString(`UPDATE users SET `)
-
-	if u.Username != "" {
-		queryBuild.WriteString(`username=?, `)
-		args = append(args, u.Username)
-	}
-
-	if u.Role != Role(0) {
-		queryBuild.WriteString(`role=?, `)
-		args = append(args, u.Role)
-	}
-
-	query := strings.TrimRight(queryBuild.String(), ", ")
-
-	queryBuild.Reset()
-	queryBuild.WriteString(query)
-
-	queryBuild.WriteString(` WHERE id=?`)
-	args = append(args, id)
-
+	query, args := u.buildUserUpdateQuery(id)
 	res, err := u.dbCtx.Exec(
-		queryBuild.String(), args...,
+		query, args...,
 	)
 	if err != nil {
 		return err
@@ -229,4 +207,31 @@ func (u *User) SetDeleted() {
 
 func (u *User) IsDeleted() bool {
 	return u.Deleted > 0
+}
+
+func (u *User) buildUserUpdateQuery(id int) (string, []interface{}) {
+	var queryBuild = strings.Builder{}
+	var args []interface{}
+
+	queryBuild.WriteString(`UPDATE users SET `)
+
+	if u.Username != "" {
+		queryBuild.WriteString(`username=?, `)
+		args = append(args, u.Username)
+	}
+
+	if u.Role != Role(0) {
+		queryBuild.WriteString(`role=?, `)
+		args = append(args, u.Role)
+	}
+
+	query := strings.TrimRight(queryBuild.String(), ", ")
+
+	queryBuild.Reset()
+	queryBuild.WriteString(query)
+
+	queryBuild.WriteString(` WHERE id=?`)
+	args = append(args, id)
+
+	return queryBuild.String(), args
 }
