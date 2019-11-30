@@ -3,6 +3,8 @@ package models
 import (
 	"database/sql"
 	"fmt"
+	"strings"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -149,25 +151,31 @@ func (u *User) Pagination(start, end int) ([]Model, error) {
 }
 
 func (u *User) Update(id int) error {
+	var queryBuild = strings.Builder{}
 	var args []interface{}
 
-	query := `UPDATE users SET `
+	queryBuild.WriteString(`UPDATE users SET `)
 
 	if u.Username != "" {
-		query += `username=?, `
+		queryBuild.WriteString(`username=?, `)
 		args = append(args, u.Username)
 	}
 
 	if u.Role != Role(0) {
-		query += `role=? `
+		queryBuild.WriteString(`role=?, `)
 		args = append(args, u.Role)
 	}
 
-	query += `WHERE id=?`
+	query := strings.TrimRight(queryBuild.String(), ", ")
+
+	queryBuild.Reset()
+	queryBuild.WriteString(query)
+
+	queryBuild.WriteString(` WHERE id=?`)
 	args = append(args, id)
 
 	res, err := u.dbCtx.Exec(
-		query, args...,
+		queryBuild.String(), args...,
 	)
 	if err != nil {
 		return err
@@ -191,7 +199,7 @@ func (u *User) Delete(id int) error {
 		return err
 	}
 
-	rowCount, err := res.LastInsertId()
+	rowCount, err := res.RowsAffected()
 	if err != nil {
 		return err
 	}
@@ -200,7 +208,7 @@ func (u *User) Delete(id int) error {
 		return fmt.Errorf("user with id %v not deleted", id)
 	}
 
-	return err
+	return nil
 }
 
 func (u *User) GetID() int {

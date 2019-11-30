@@ -200,7 +200,7 @@ func UpdateUser(dbProvider provider.IDBProvider) http.HandlerFunc {
 			return
 		}
 
-		var user = models.User{}
+		var user = models.User{ID: id}
 
 		err = json.NewDecoder(r.Body).Decode(&user)
 		if err != nil {
