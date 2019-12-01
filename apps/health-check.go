@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 
 	"projectionist/config"
@@ -14,14 +15,20 @@ import (
 )
 
 type HealthCheck struct {
+	syncChan chan string // chan with service name
+	sync.Mutex
+	dones      map[int]chan bool
 	httpClient http.Client
 	cfg        *config.Config
 	dbProvider provider.IDBProvider
 }
 
-func NewHealthCkeck(cfg *config.Config, db *sql.DB) *HealthCheck {
+func NewHealthCkeck(cfg *config.Config, db *sql.DB, syncChan chan string) *HealthCheck {
 	return &HealthCheck{
-		cfg: cfg,
+		syncChan: syncChan,
+		Mutex:    sync.Mutex{},
+		dones:    make(map[int]chan bool),
+		cfg:      cfg,
 		httpClient: http.Client{Transport: &http.Transport{
 			MaxIdleConns:       cfg.HealthCheck.ConnCount,
 			IdleConnTimeout:    time.Duration(cfg.HealthCheck.ConnTimeout) * time.Second,
@@ -45,22 +52,68 @@ func (hc *HealthCheck) Run() error {
 			continue
 		}
 
-		hc.run(service)
+		if service.IsDeleted() {
+			continue
+		}
+
+		hc.Lock()
+		hc.dones[service.ID] = make(chan bool)
+
+		hc.run(service, hc.dones[service.ID])
+		hc.Unlock()
 
 	}
+
+	go hc.watcher()
+
 	log.Printf("health-check: initialization services finished")
 
 	return nil
 }
 
-func (hc *HealthCheck) run(service *models.Service) {
+func (hc *HealthCheck) watcher() {
+	for {
+		select {
+		case serviceName := <-hc.syncChan:
+			iService, err := hc.dbProvider.GetByName(&models.Service{}, serviceName)
+			if err != nil {
+				log.Printf("health-check: dbProvider.GetByName() error: %v", err)
+				continue
+			}
+
+			service, ok := iService.(*models.Service)
+			if !ok {
+				log.Printf("health-check: %+v is not service", iService)
+				continue
+			}
+
+			hc.Lock()
+			_, ok = hc.dones[service.ID]
+			if !ok {
+				hc.dones[service.ID] = make(chan bool)
+			}
+
+			if service.IsDeleted() {
+				hc.dones[service.ID] <- true
+				hc.Unlock()
+				continue
+			}
+
+			hc.run(service, hc.dones[service.ID])
+			hc.Unlock()
+		default:
+			continue
+		}
+	}
+}
+
+func (hc *HealthCheck) run(service *models.Service, done chan bool) {
 	ticker := time.NewTicker(time.Duration(service.Frequency) * time.Second)
-	done := make(chan bool)
 	go func() {
 		for {
 			select {
 			case <-done:
-				// todo implement graceful stop
+				log.Printf("health-check: for service %s health check stoped", service.Name)
 				return
 			case <-ticker.C:
 				err := hc.Health(service)

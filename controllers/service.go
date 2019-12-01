@@ -13,7 +13,7 @@ import (
 	"projectionist/utils"
 )
 
-func NewService(dbProvider provider.IDBProvider) http.HandlerFunc {
+func NewService(dbProvider provider.IDBProvider, syncShan chan string) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var service = models.Service{}
 
@@ -54,6 +54,8 @@ func NewService(dbProvider provider.IDBProvider) http.HandlerFunc {
 			utils.JsonRespond(w, utils.Message(false, consts.NotSavedResp))
 			return
 		}
+
+		syncShan <- service.Name
 
 		respond := utils.Message(true, "New service created")
 		respond["serviceID"] = service.ID
@@ -180,7 +182,7 @@ func GetServiceList(dbProvider provider.IDBProvider) http.HandlerFunc {
 	})
 }
 
-func UpdateService(dbProvider provider.IDBProvider) http.HandlerFunc {
+func UpdateService(dbProvider provider.IDBProvider, syncShan chan string) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var id, err = utils.GetIDFromReq(r)
 		if err != nil {
@@ -211,13 +213,23 @@ func UpdateService(dbProvider provider.IDBProvider) http.HandlerFunc {
 			return
 		}
 
+		iService, err := dbProvider.GetByID(&models.Service{}, int64(id))
+		if err != nil {
+			log.Printf("dbProvider.GetByID error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			utils.JsonRespond(w, utils.Message(false, consts.SmtWhenWrongResp))
+			return
+		}
+
+		syncShan <- iService.GetName()
+
 		var respond = utils.Message(true, "service updated")
 		respond["service"] = service
 		utils.JsonRespond(w, respond)
 	})
 }
 
-func DeleteService(dbProvider provider.IDBProvider) http.HandlerFunc {
+func DeleteService(dbProvider provider.IDBProvider, syncChan chan string) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var id, err = utils.GetIDFromReq(r)
 		if err != nil {
@@ -231,13 +243,23 @@ func DeleteService(dbProvider provider.IDBProvider) http.HandlerFunc {
 			return
 		}
 
-		var service = &models.Service{}
-		err = dbProvider.Delete(service, id)
+		iService, err := dbProvider.GetByID(&models.Service{}, int64(id))
 		if err != nil {
+			log.Printf("dbProvider.GetByID error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			utils.JsonRespond(w, utils.Message(false, consts.SmtWhenWrongResp))
+			return
+		}
+
+		err = dbProvider.Delete(&models.Service{}, id)
+		if err != nil {
+			log.Printf("projectionist-api: dbProvider.Delete error: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			utils.JsonRespond(w, utils.Message(false, consts.NotDeletedResp))
 			return
 		}
+
+		syncChan <- iService.GetName()
 
 		var respond = utils.Message(true, "service deleted")
 		utils.JsonRespond(w, respond)

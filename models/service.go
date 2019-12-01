@@ -223,6 +223,7 @@ func (s *Service) Update(id int) error {
 	for _, email := range s.Emails {
 		err = email.SetDBCtx(s.dbCtx)
 		if err != nil {
+			tx.Rollback()
 			return err
 		}
 		err = email.Validate()
@@ -251,7 +252,7 @@ func (s *Service) Delete(id int) error {
 		return err
 	}
 
-	res, err := s.dbCtx.Exec("DELETE FROM services WHERE id=?", id)
+	res, err := s.dbCtx.Exec("UPDATE services SET deleted=1 WHERE id=?", id)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -274,15 +275,10 @@ func (s *Service) Delete(id int) error {
 		return err
 	}
 
-	rowsCount, err = res.RowsAffected()
+	_, err = res.RowsAffected()
 	if err != nil {
 		tx.Rollback()
 		return err
-	}
-
-	if rowsCount == 0 {
-		tx.Rollback()
-		return fmt.Errorf("for service %d emails not deleted", id)
 	}
 
 	return tx.Commit()

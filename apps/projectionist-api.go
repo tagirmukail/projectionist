@@ -19,12 +19,13 @@ import (
 )
 
 type App struct {
+	syncChan    chan string
 	cfg         *config.Config
 	dbProvider  provider.IDBProvider
 	cfgProvider provider.IDBProvider
 }
 
-func NewApp(cfg *config.Config, sqlDB *sql.DB) (*App, error) {
+func NewApp(cfg *config.Config, sqlDB *sql.DB, syncShan chan string) (*App, error) {
 	// initialization database tables
 	if err := db.InitTables(sqlDB); err != nil {
 		return nil, err
@@ -36,6 +37,7 @@ func NewApp(cfg *config.Config, sqlDB *sql.DB) (*App, error) {
 	}
 
 	return &App{
+		syncChan:    syncShan,
 		cfg:         cfg,
 		dbProvider:  provider.NewDBProvider(sqlDB),
 		cfgProvider: cfgProvider,
@@ -84,11 +86,11 @@ func (a *App) newRouter() *mux.Router {
 	router.HandleFunc(consts.UrlCfgV1+"/{id}", controllers.UpdateCfg(a.cfgProvider)).Methods(http.MethodPut)
 	router.HandleFunc(consts.UrlCfgV1+"/{id}", controllers.DeleteCfg(a.cfgProvider)).Methods(http.MethodDelete)
 
-	router.HandleFunc(consts.UrlServiceV1, controllers.NewService(a.dbProvider)).Methods(http.MethodPost)
+	router.HandleFunc(consts.UrlServiceV1, controllers.NewService(a.dbProvider, a.syncChan)).Methods(http.MethodPost)
 	router.HandleFunc(consts.UrlServiceV1+"/{id}", controllers.GetService(a.dbProvider)).Methods(http.MethodGet)
 	router.HandleFunc(consts.UrlServiceV1, controllers.GetServiceList(a.dbProvider)).Methods(http.MethodGet)
-	router.HandleFunc(consts.UrlServiceV1+"/{id}", controllers.UpdateService(a.dbProvider)).Methods(http.MethodPut)
-	router.HandleFunc(consts.UrlServiceV1+"/{id}", controllers.DeleteService(a.dbProvider)).Methods(http.MethodDelete)
+	router.HandleFunc(consts.UrlServiceV1+"/{id}", controllers.UpdateService(a.dbProvider, a.syncChan)).Methods(http.MethodPut)
+	router.HandleFunc(consts.UrlServiceV1+"/{id}", controllers.DeleteService(a.dbProvider, a.syncChan)).Methods(http.MethodDelete)
 
 	return router
 }

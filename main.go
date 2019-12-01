@@ -40,7 +40,9 @@ func main() {
 	}
 	defer sqlDB.Close()
 
-	health := apps.NewHealthCkeck(cfg, sqlDB)
+	syncChan := make(chan string)
+
+	health := apps.NewHealthCkeck(cfg, sqlDB, syncChan)
 	if checker {
 		err = health.Run()
 		if err != nil {
@@ -48,7 +50,7 @@ func main() {
 		}
 	}
 
-	application, err := apps.NewApp(cfg, sqlDB)
+	application, err := apps.NewApp(cfg, sqlDB, syncChan)
 	if err != nil {
 		log.Fatalf("projectionist-api: error: %v", err)
 	}
