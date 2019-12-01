@@ -14,11 +14,20 @@ type Config struct {
 	Email           string         `json:"email"`
 	EmailPassword   string         `json:"email_password"`
 	HealthCheck     HealthCheckCfg `json:"health_check"`
+	NotifierConfig  NotifierConfig `json:"notifier"`
 }
 
 type HealthCheckCfg struct {
 	ConnCount   int `json:"conn_count"`
 	ConnTimeout int `json:"conn_timeout"`
+}
+
+type NotifierConfig struct {
+	Enable   bool   `json:"enable"`
+	Address  string `json:"address"`
+	Port     int    `json:"port"`
+	From     string `json:"from"`
+	Password string `json:"password"`
 }
 
 func NewConfig() (*Config, error) {

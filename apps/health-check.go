@@ -15,6 +15,7 @@ import (
 )
 
 type HealthCheck struct {
+	notifier *Notifier
 	syncChan chan string // chan with service name
 	sync.Mutex
 	dones      map[int]chan bool
@@ -25,6 +26,7 @@ type HealthCheck struct {
 
 func NewHealthCkeck(cfg *config.Config, db *sql.DB, syncChan chan string) *HealthCheck {
 	return &HealthCheck{
+		notifier: NewNotifier(cfg),
 		syncChan: syncChan,
 		Mutex:    sync.Mutex{},
 		dones:    make(map[int]chan bool),
@@ -121,11 +123,11 @@ func (hc *HealthCheck) run(service *models.Service, done chan bool) {
 					if service.Status == models.Alive {
 						service.Status = models.Dead
 					}
-					// todo send message
+					//hc.notifier.Send() TODO send message logic
 					log.Printf("service with id %d and name %s Health error: %v", service.ID, service.Name, err)
 					err := hc.dbProvider.Update(service, service.ID)
 					if err != nil {
-						// todo send message
+						//hc.notifier.Send() TODO send message logic
 						log.Printf(
 							"for service with id %d and name %s status %v not updated",
 							service.ID,
@@ -139,7 +141,7 @@ func (hc *HealthCheck) run(service *models.Service, done chan bool) {
 					service.Status = models.Alive
 					err = hc.dbProvider.Update(service, service.ID)
 					if err != nil {
-						// todo send message
+						//hc.notifier.Send() TODO send message logic
 						log.Printf(
 							"for service with id %d and name %s status %v not updated",
 							service.ID,
