@@ -1,0 +1,11 @@
+language: go
+os:
+  - linux
+  - osx
+go:
+  - "go1.13"
+go_import_path: github.com/tagirmukail/projectionist
+install:
+  - make build
+script:
+  - make test-cover
