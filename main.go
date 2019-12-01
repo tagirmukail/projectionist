@@ -40,7 +40,7 @@ func main() {
 	}
 	defer sqlDB.Close()
 
-	syncChan := make(chan string)
+	syncChan := make(chan string, 300)
 
 	health := apps.NewHealthCkeck(cfg, sqlDB, syncChan)
 	if checker {
