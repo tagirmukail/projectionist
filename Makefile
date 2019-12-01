@@ -4,25 +4,35 @@ GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
 GOTEST=$(GOCMD) test
 GOGET=$(GOCMD) get
+GOMOD=$(GOCMD) mod
+GO111MODULE=auto
+CGO_ENABLED=0
 BINARY_NAME=projectionist
 BINARY_UNIX=$(BINARY_NAME)_unix
 
 build:
-	$(GOBUILD) -o $(BINARY_NAME) -v
+	@echo "#Build"
+	@GO111MODULE=$(GO111MODULE) $(GOBUILD) -o $(BINARY_NAME) -v
+	@echo "#Build completed"
 
 test-verbose-cover:
-	$(GOTEST) -v -cover ./...
+	GO111MODULE=$(GO111MODULE) $(GOTEST) -v -cover ./...
 
 test-cover:
-	$(GOTEST) -cover ./...
+	GO111MODULE=$(GO111MODULE) $(GOTEST) -cover ./...
 
 clean:
 	$(GOCLEAN)
 	rm -f $(BINARY_NAME)
 	rm -f $(BINARY_UNIX)
 
-# Cross compilation
-#build-linux:
-#	CGO_ENABLED=1 GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(BINARY_UNIX) -v
-#docker-build:
-#	docker run --rm -it -v "$(GOPATH)":/go -w /go/src/projectionist golang:latest go build -o "$(BINARY_UNIX)" -v
+deps:
+	@echo "#Download dependencies started"
+	$(GOMOD) download
+	@echo "#Download dependencies finished"
+
+initmodules:
+	$(GOMOD) init projectionist
+
+tidy:
+	GO111MODULE=$(GO111MODULE) $(GOMOD) tidy

@@ -8,7 +8,7 @@ import (
 func saveProcessErrBusy(save func() error) error {
 	err := save()
 	for i := 0; i < 5; i++ {
-		if err != sqlite3.ErrBusy {
+		if err != sqlite3.ErrBusyRecovery && err != sqlite3.ErrBusySnapshot && err != sqlite3.ErrBusy {
 			return err
 		}
 		time.Sleep(writeTimeout)
@@ -22,7 +22,7 @@ func saveProcessErrBusy(save func() error) error {
 func processErrBusy(id int, f func(id int) error) error {
 	err := f(id)
 	for i := 0; i < 5; i++ {
-		if err != sqlite3.ErrBusy {
+		if err != sqlite3.ErrBusyRecovery && err != sqlite3.ErrBusySnapshot && err != sqlite3.ErrBusy {
 			return err
 		}
 		time.Sleep(writeTimeout)
