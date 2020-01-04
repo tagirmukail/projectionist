@@ -84,6 +84,8 @@ func LoginApi(
 			return
 		}
 
+		log.Printf("Login successful for %v", user.Username)
+
 		respond = utils.Message(true, "Login successful")
 		user.Password = ""
 		user.Token = tokenStr

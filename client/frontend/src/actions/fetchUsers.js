@@ -8,10 +8,10 @@ export const fetchUsers = (page, count) => async (dispatch, getState) => {
     api(getState)
         .get(`/v1/api/user?page=${page}&count=${count}`)
         .then((resp) => {
-            console.log(resp);
+            console.log("Resp users: ", resp.data);
             dispatch({type: FETCH_USERS, payload: resp.data})
         })
         .catch((error) => {
             console.log(error);
         })
-}
+};

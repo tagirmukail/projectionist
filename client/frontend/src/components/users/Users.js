@@ -2,19 +2,27 @@ import React from 'react';
 import { connect } from 'react-redux';
 import withWidth from '@material-ui/core/withWidth';
 import { fetchUsers } from '../../actions/fetchUsers';
+import {Redirect} from "react-router-dom";
+
+import {
+    Container
+} from '@material-ui/core';
 
 class Users extends React.Component {
     state = {
         error: '',
-    }
+    };
 
     componentDidMount () {
-        this.props.fetchUsers(0, 10);
+        this.props.fetchUsers(1, 10);
     }
 
     render() {
-        console.log(this.props.users.result);
-        return (<div>Users</div>)
+        if (!localStorage.getItem("token")) {
+            return <Redirect to="/login"/>
+        }
+
+        return (<Container>Users</Container>)
     }
 }
 
@@ -22,7 +30,7 @@ const mapStateToProps = (state) => {
     return {
         users: state.users,
     }
-}
+};
 
 export default withWidth()(connect(
     mapStateToProps,

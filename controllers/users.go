@@ -180,6 +180,8 @@ func GetUserList(dbProvider provider.IDBProvider) http.HandlerFunc {
 			result = append(result, user)
 		}
 
+		log.Printf("GetUserList returned: %#v", result)
+
 		var respond = utils.Message(true, "")
 		respond[consts.KEY_USERS] = userModels
 		utils.JsonRespond(w, respond)

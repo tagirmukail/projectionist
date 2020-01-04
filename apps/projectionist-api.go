@@ -75,20 +75,20 @@ func (a *App) newRouter() *mux.Router {
 	router.HandleFunc(consts.UrlApiLoginV1, controllers.LoginApi(a.dbProvider, a.cfg.TokenSecretKey)).Methods(http.MethodPost)
 
 	router.HandleFunc(consts.UrlUserV1, controllers.NewUser(a.dbProvider)).Methods(http.MethodPost)
-	router.HandleFunc(consts.UrlUserV1+"/{id}", controllers.GetUser(a.dbProvider)).Methods(http.MethodGet)
 	router.HandleFunc(consts.UrlUserV1, controllers.GetUserList(a.dbProvider)).Methods(http.MethodGet)
+	router.HandleFunc(consts.UrlUserV1+"/{id}", controllers.GetUser(a.dbProvider)).Methods(http.MethodGet)
 	router.HandleFunc(consts.UrlUserV1+"/{id}", controllers.UpdateUser(a.dbProvider)).Methods(http.MethodPut)
 	router.HandleFunc(consts.UrlUserV1+"/{id}", controllers.DeleteUser(a.dbProvider)).Methods(http.MethodGet)
 
 	router.HandleFunc(consts.UrlCfgV1, controllers.NewCfg(a.cfgProvider)).Methods(http.MethodPost)
-	router.HandleFunc(consts.UrlCfgV1+"/{id}", controllers.GetCfg(a.cfgProvider)).Methods(http.MethodGet)
 	router.HandleFunc(consts.UrlCfgV1, controllers.GetCfgList(a.cfgProvider)).Methods(http.MethodPost)
+	router.HandleFunc(consts.UrlCfgV1+"/{id}", controllers.GetCfg(a.cfgProvider)).Methods(http.MethodGet)
 	router.HandleFunc(consts.UrlCfgV1+"/{id}", controllers.UpdateCfg(a.cfgProvider)).Methods(http.MethodPut)
 	router.HandleFunc(consts.UrlCfgV1+"/{id}", controllers.DeleteCfg(a.cfgProvider)).Methods(http.MethodDelete)
 
 	router.HandleFunc(consts.UrlServiceV1, controllers.NewService(a.dbProvider, a.syncChan)).Methods(http.MethodPost)
-	router.HandleFunc(consts.UrlServiceV1+"/{id}", controllers.GetService(a.dbProvider)).Methods(http.MethodGet)
 	router.HandleFunc(consts.UrlServiceV1, controllers.GetServiceList(a.dbProvider)).Methods(http.MethodGet)
+	router.HandleFunc(consts.UrlServiceV1+"/{id}", controllers.GetService(a.dbProvider)).Methods(http.MethodGet)
 	router.HandleFunc(consts.UrlServiceV1+"/{id}", controllers.UpdateService(a.dbProvider, a.syncChan)).Methods(http.MethodPut)
 	router.HandleFunc(consts.UrlServiceV1+"/{id}", controllers.DeleteService(a.dbProvider, a.syncChan)).Methods(http.MethodDelete)
 

@@ -5,17 +5,15 @@ const initialState = {
     result: {
         data: [],
     }
-}
+};
 
-const login = (state = initialState, action) => {
+export default function login(state = initialState, action) {
     switch (action.type) {
         case FETCH_LOGIN_START:
             return { wait: true, result: { data: [] } };
         case FETCH_LOGIN:
-            return { wait: false, result: action.payload };
+            return {...state, wait: false, result: {data: action.payload} };
         default:
             return state;
     }
-}
-
-export default login;
+};

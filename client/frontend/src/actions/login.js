@@ -7,8 +7,8 @@ export const fetchLogin = (form) => async (dispatch, getState) => {
     api(getState)
         .post(`/v1/api/login`, form)
         .then((resp) => {
-            dispatch({ type: FETCH_LOGIN, payload: resp.data })
-            return;
+            localStorage.setItem("token", resp.data.user.token);
+            dispatch({ type: FETCH_LOGIN, payload: resp.data });
         })
         .catch((error) => console.log(error));
-}
+};
