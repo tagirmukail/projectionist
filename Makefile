@@ -9,6 +9,7 @@ GO111MODULE=auto
 CGO_ENABLED=0
 BINARY_NAME=projectionist
 BINARY_UNIX=$(BINARY_NAME)_unix
+PACKAGE=$(BINARY_NAME)
 
 build:
 	@echo "#Build"
@@ -36,3 +37,13 @@ initmodules:
 
 tidy:
 	GO111MODULE=$(GO111MODULE) $(GOMOD) tidy
+
+mock-db-provider:
+	rm -f ./provider/mock-db-provider.go
+	mockgen -package=provider -self_package=${PACKAGE}/provider ${PACKAGE}/provider IDBProvider > ./provider/_mock-db-provider.go
+	mv -f ./provider/_mock-db-provider.go ./provider/mock-db-provider.go
+
+mock-model:
+	rm -f ./models/mock-model.go
+	mockgen -package=models -self_package=${PACKAGE}/models ${PACKAGE}/models Model > ./models/_mock-model.go
+	mv -f ./models/_mock-model.go ./models/mock-model.go
