@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package projectionist;
+
+import "google/api/annotations.proto";
+
+service ProjectionistService {
+    // auth
+    rpc Login(LoginRequest) returns (LoginResponse) {
+        option (google.api.http) = {
+            post: "/v2/api/login"
+            body: "*"
+        };
+    }
+    //---------
+    // user
+    rpc NewUser(UserRequest) returns (UserResponse) {
+        option (google.api.http) = {
+            post: "/v2/api/user"
+            body: "*"
+        };
+    }
+}
+
+enum UserRole {
+    Empty = 0;
+    Admin = 1;
+    SuperAdmin = 2;
+}
+
+enum Deleted {
+    _ = 0;
+    Is_live = 1;
+    Is_deleted = 2;
+}
+
+// User
+message User {
+    int64 id = 1;
+    string username = 2;
+    string password = 3;
+    UserRole role = 4;
+    string token = 5;
+    Deleted deleted = 6;
+}
+
+message UserRequest {
+    int64 id = 1;
+    string username = 2;
+    string password = 3;
+    UserRole role = 4;
+
+}
+
+message UserResponse {
+    DefaultResponse meta = 1;
+    string user_id = 2;
+}
+
+// Auth
+message LoginRequest {
+    string username = 1;
+    string password = 2;
+}
+
+message LoginResponse {
+    User user = 1;
+    DefaultResponse meta = 2;
+}
+
+// Default
+message DefaultResponse {
+    bool status = 1;
+    string message = 2;
+    int32 code = 3;
+}

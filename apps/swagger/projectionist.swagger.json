@@ -1,0 +1,187 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "projectionist.proto",
+    "version": "version not set"
+  },
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v2/api/login": {
+      "post": {
+        "summary": "auth",
+        "operationId": "Login",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/projectionistLoginResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/projectionistLoginRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ProjectionistService"
+        ]
+      }
+    },
+    "/v2/api/user": {
+      "post": {
+        "summary": "---------\nuser",
+        "operationId": "NewUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/projectionistUserResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/projectionistUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ProjectionistService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "projectionistDefaultResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "message": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "Default"
+    },
+    "projectionistDeleted": {
+      "type": "string",
+      "enum": [
+        "_",
+        "Is_live",
+        "Is_deleted"
+      ],
+      "default": "_"
+    },
+    "projectionistLoginRequest": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      },
+      "title": "Auth"
+    },
+    "projectionistLoginResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/projectionistUser"
+        },
+        "meta": {
+          "$ref": "#/definitions/projectionistDefaultResponse"
+        }
+      }
+    },
+    "projectionistUser": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "role": {
+          "$ref": "#/definitions/projectionistUserRole"
+        },
+        "token": {
+          "type": "string"
+        },
+        "deleted": {
+          "$ref": "#/definitions/projectionistDeleted"
+        }
+      },
+      "title": "User"
+    },
+    "projectionistUserRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "role": {
+          "$ref": "#/definitions/projectionistUserRole"
+        }
+      }
+    },
+    "projectionistUserResponse": {
+      "type": "object",
+      "properties": {
+        "meta": {
+          "$ref": "#/definitions/projectionistDefaultResponse"
+        },
+        "user_id": {
+          "type": "string"
+        }
+      }
+    },
+    "projectionistUserRole": {
+      "type": "string",
+      "enum": [
+        "Empty",
+        "Admin",
+        "SuperAdmin"
+      ],
+      "default": "Empty"
+    }
+  }
+}

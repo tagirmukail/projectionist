@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sync"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -44,7 +45,8 @@ func NewApp(cfg *config.Config, sqlDB *sql.DB, syncShan chan string) (*App, erro
 	}, nil
 }
 
-func (a *App) Run() {
+func (a *App) Run(wg *sync.WaitGroup) {
+	defer wg.Done()
 	var address = fmt.Sprintf("%s:%d", a.cfg.Host, a.cfg.Port)
 	var err error
 
@@ -55,7 +57,7 @@ func (a *App) Run() {
 
 	router := a.newRouter()
 
-	log.Printf("Start service on: %v", address)
+	log.Printf("Start rest api service on: %v", address)
 	log.Fatal(http.ListenAndServe(
 		address,
 		handlers.CORS(
@@ -71,6 +73,9 @@ func (a *App) newRouter() *mux.Router {
 	router.Use(
 		middleware.JwtAuthentication(a.cfg.TokenSecretKey),
 	)
+
+	sh := http.StripPrefix("/swaggerui/", http.FileServer(http.Dir("./apps/swagger/")))
+	router.PathPrefix("/swaggerui/").Handler(sh)
 
 	router.HandleFunc(consts.UrlApiLoginV1, controllers.LoginApi(a.dbProvider, a.cfg.TokenSecretKey)).Methods(http.MethodPost)
 
