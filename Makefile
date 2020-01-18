@@ -9,6 +9,9 @@ GO111MODULE=auto
 CGO_ENABLED=0
 BINARY_NAME=projectionist
 BINARY_UNIX=$(BINARY_NAME)_unix
+GOPATH=$(HOME)/go
+PROTO_DIR=./proto
+SWAGGER_DIR=./apps/swagger
 
 build:
 	@echo "#Build"
@@ -36,3 +39,11 @@ initmodules:
 
 tidy:
 	GO111MODULE=$(GO111MODULE) $(GOMOD) tidy
+
+protogen:
+	protoc -I/usr/local/include \
+	 -I$(GOPATH)/src \
+	 -I$(PROTO_DIR) \
+	 -I$(GOPATH)/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
+	  --grpc-gateway_out=logtostderr=true:$(PROTO_DIR) \
+	 --swagger_out=logtostderr=true:$(SWAGGER_DIR) --go_out=plugins=grpc:$(PROTO_DIR) projectionist.proto

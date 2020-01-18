@@ -8,5 +8,5 @@ const (
 	KEY_CONFIGS  = "configs"
 	KEY_SERVICES = "services"
 
-	LIMIT = 100
+	JsonOriginalType = "application/json+original"
 )
