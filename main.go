@@ -3,14 +3,22 @@ package main
 import (
 	"database/sql"
 	"flag"
+	"google.golang.org/grpc/grpclog"
 	"log"
+	"os"
 	"runtime/debug"
+	"sync"
 
 	_ "github.com/mattn/go-sqlite3"
 
 	"projectionist/apps"
 	"projectionist/config"
 )
+
+func init() {
+	grpcLog := grpclog.NewLoggerV2(os.Stdout, os.Stderr, os.Stderr)
+	grpclog.SetLoggerV2(grpcLog)
+}
 
 func main() {
 	defer func() {
@@ -21,11 +29,14 @@ func main() {
 		}
 	}()
 
+	var grpc bool
 	var checker bool
 	flag.BoolVar(&checker, "checker", true, "Enable or disable health check")
+	flag.BoolVar(&grpc, "grpc", true, "Enable or disable grpc")
 	flag.Parse()
 
 	log.Printf("Health check mode: %v\n", checker)
+	log.Printf("GRPC: %v\n", grpc)
 	cfg, err := config.NewConfig()
 	if err != nil {
 		log.Fatalln(err)
@@ -50,10 +61,21 @@ func main() {
 		}
 	}
 
+	wg := &sync.WaitGroup{}
+
 	application, err := apps.NewApp(cfg, sqlDB, syncChan)
 	if err != nil {
 		log.Fatalf("projectionist-api: error: %v", err)
 	}
 
-	application.Run()
+	wg.Add(1)
+	go apps.RunGRPC(wg, cfg, sqlDB)
+
+	wg.Add(1)
+	go application.Run(wg)
+
+	wg.Add(1)
+	go apps.RunGrpcApi(wg, cfg)
+
+	wg.Wait()
 }

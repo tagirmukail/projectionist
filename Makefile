@@ -10,6 +10,9 @@ CGO_ENABLED=0
 BINARY_NAME=projectionist
 BINARY_UNIX=$(BINARY_NAME)_unix
 PACKAGE=$(BINARY_NAME)
+GOPATH=$(HOME)/go
+PROTO_DIR=./proto
+SWAGGER_DIR=./apps/swagger
 
 build:
 	@echo "#Build"
@@ -47,3 +50,11 @@ mock-model:
 	rm -f ./models/mock-model.go
 	mockgen -package=models -self_package=${PACKAGE}/models ${PACKAGE}/models Model > ./models/_mock-model.go
 	mv -f ./models/_mock-model.go ./models/mock-model.go
+
+protogen:
+	protoc -I/usr/local/include \
+	 -I$(GOPATH)/src \
+	 -I$(PROTO_DIR) \
+	 -I$(GOPATH)/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
+	  --grpc-gateway_out=logtostderr=true:$(PROTO_DIR) \
+	 --swagger_out=logtostderr=true:$(SWAGGER_DIR) --go_out=plugins=grpc:$(PROTO_DIR) projectionist.proto

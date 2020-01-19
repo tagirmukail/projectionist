@@ -9,6 +9,8 @@ import (
 type Config struct {
 	Host            string         `json:"host"`
 	Port            int            `json:"port"`
+	GrpcPort        int            `json:"grpc_port"`
+	GrpcApiPort     int            `json:"grpc_api_port"`
 	TokenSecretKey  string         `json:"token_secret_key"`
 	AccessAddresses []string       `json:"access_addresses"`
 	Email           string         `json:"email"`
@@ -37,6 +39,8 @@ func NewConfig() (*Config, error) {
 			return &Config{
 				Host:            "127.0.0.1",
 				Port:            8080,
+				GrpcPort:        8081,
+				GrpcApiPort:     8082,
 				TokenSecretKey:  "Secret",
 				AccessAddresses: []string{"*"},
 			}, nil
@@ -66,6 +70,14 @@ func (cfg *Config) checkDefault() {
 
 	if cfg.Port == 0 {
 		cfg.Port = 8080
+	}
+
+	if cfg.GrpcPort == 0 {
+		cfg.GrpcPort = 8081
+	}
+
+	if cfg.GrpcApiPort == 0 {
+		cfg.GrpcApiPort = 8082
 	}
 
 	if cfg.AccessAddresses == nil || len(cfg.AccessAddresses) == 0 {
