@@ -4,27 +4,27 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"net"
+	"net/http"
+	"time"
+
 	"github.com/gorilla/handlers"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/reflection"
-	"net"
-	"net/http"
+
 	projGrpc "projectionist/apps/grpc"
 	"projectionist/config"
 	"projectionist/consts"
 	"projectionist/middleware"
 	projPB "projectionist/proto"
 	"projectionist/provider"
-	"sync"
-	"time"
 )
 
 // RunGRPC - started grpc server
-func RunGRPC(wg *sync.WaitGroup, cfg *config.Config, sqlDB *sql.DB) {
-	defer wg.Done()
-
+func RunGRPC(cfg *config.Config, sqlDB *sql.DB) {
 	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", cfg.Host, cfg.GrpcPort))
 	if err != nil {
 		grpclog.Fatalf("listen error: %v", err)
@@ -64,8 +64,7 @@ func RunGRPC(wg *sync.WaitGroup, cfg *config.Config, sqlDB *sql.DB) {
 }
 
 // RunGrpcApi - started HTTP reverse-proxy server
-func RunGrpcApi(wg *sync.WaitGroup, cfg *config.Config) {
-	defer wg.Done()
+func RunGrpcApi(cfg *config.Config) {
 	grpcServerEndpoint := fmt.Sprintf("%s:%d", cfg.Host, cfg.GrpcPort)
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
