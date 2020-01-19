@@ -49,6 +49,7 @@ func NewHealthCkeck(cfg *config.Config, db *sql.DB, syncChan chan string) *Healt
 	}
 }
 
+// Run - run health check on services
 func (hc *HealthCheck) Run() error {
 	grpclog.Info("health-check: initialization services started")
 
@@ -88,10 +89,12 @@ func (hc *HealthCheck) Run() error {
 	return nil
 }
 
+// Stop - stop healt checker cron tasks
 func (hc *HealthCheck) Stop() {
 	hc.crontab.Stop()
 }
 
+// plan - add cron entry by service and change service health status
 func (hc *HealthCheck) plan(service *models.Service) error {
 	entryID, err := hc.crontab.AddFunc(fmt.Sprintf(EveryDurationPtrn, time.Duration(service.Frequency)*time.Second), func() {
 		err := hc.Health(service)
@@ -138,6 +141,7 @@ func (hc *HealthCheck) plan(service *models.Service) error {
 	return nil
 }
 
+// watcher - watch if serivce added, updated, deleted run this logic
 func (hc *HealthCheck) watcher() {
 	for {
 		select {
@@ -174,6 +178,7 @@ func (hc *HealthCheck) watcher() {
 	}
 }
 
+// watchErr - watcher on errors
 func (hc *HealthCheck) watchErr() error {
 	for {
 		select {
@@ -186,6 +191,7 @@ func (hc *HealthCheck) watchErr() error {
 	}
 }
 
+// Health - send request by service healt link and check service status
 func (hc *HealthCheck) Health(service *models.Service) error {
 	req, err := http.NewRequest(http.MethodGet, service.Link, nil)
 	if err != nil {
