@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"flag"
-	"google.golang.org/grpc/grpclog"
 	"log"
 	"os"
 	"runtime/debug"
@@ -11,7 +10,10 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 
+	"google.golang.org/grpc/grpclog"
+
 	"projectionist/apps"
+	"projectionist/apps/healtchecker"
 	"projectionist/config"
 )
 
@@ -53,12 +55,9 @@ func main() {
 
 	syncChan := make(chan string, 300)
 
-	health := apps.NewHealthCkeck(cfg, sqlDB, syncChan)
+	health := healtchecker.NewHealthCkeck(cfg, sqlDB, syncChan)
 	if checker {
-		err = health.Run()
-		if err != nil {
-			log.Fatalf("health-check: error: %v", err)
-		}
+		go health.Run()
 	}
 
 	wg := &sync.WaitGroup{}
@@ -78,4 +77,6 @@ func main() {
 	go apps.RunGrpcApi(wg, cfg)
 
 	wg.Wait()
+
+	health.Stop()
 }
