@@ -3,18 +3,19 @@ package healtchecker
 import (
 	"database/sql"
 	"fmt"
-	"github.com/robfig/cron/v3"
-	"google.golang.org/grpc/grpclog"
 	"net/http"
-	apps "projectionist/apps/notifier"
-	"projectionist/utils"
 	"sync"
 	"time"
 
+	"github.com/robfig/cron/v3"
+	"google.golang.org/grpc/grpclog"
+
+	apps "projectionist/apps/notifier"
 	"projectionist/config"
 	"projectionist/consts"
 	"projectionist/models"
 	"projectionist/provider"
+	"projectionist/utils"
 )
 
 const EveryDurationPtrn = "@every %s"
@@ -92,6 +93,7 @@ func (hc *HealthCheck) Run() error {
 // Stop - stop healt checker cron tasks
 func (hc *HealthCheck) Stop() {
 	hc.crontab.Stop()
+	grpclog.Info("Health Checker is stopped")
 }
 
 // plan - add cron entry by service and change service health status

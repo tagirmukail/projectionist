@@ -3,10 +3,10 @@ package main
 import (
 	"database/sql"
 	"flag"
-	"log"
 	"os"
+	"os/signal"
 	"runtime/debug"
-	"sync"
+	"syscall"
 
 	_ "github.com/mattn/go-sqlite3"
 
@@ -27,29 +27,29 @@ func main() {
 		r := recover()
 		if r != nil {
 			debug.PrintStack()
-			log.Fatalln(r)
+			grpclog.Fatalln(r)
 		}
 	}()
 
-	var grpc bool
 	var checker bool
 	flag.BoolVar(&checker, "checker", true, "Enable or disable health check")
-	flag.BoolVar(&grpc, "grpc", true, "Enable or disable grpc")
 	flag.Parse()
 
-	log.Printf("Health check mode: %v\n", checker)
-	log.Printf("GRPC: %v\n", grpc)
+	grpclog.Infof("Health check mode: %v\n", checker)
 	cfg, err := config.NewConfig()
 	if err != nil {
-		log.Fatalln(err)
+		grpclog.Fatalln(err)
 	}
 
-	log.Printf("<<<<<Projectionst>>>>>")
-	log.Printf("Configuration:%+v", cfg)
+	grpclog.Infof("<<<<<Projectionst>>>>>")
+	grpclog.Infof("Configuration:%+v", cfg)
+
+	done := make(chan os.Signal, 1)                                    // for graceful down
+	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM) // for graceful down
 
 	sqlDB, err := sql.Open("sqlite3", "./db.sqlite")
 	if err != nil {
-		log.Fatal(err)
+		grpclog.Fatalln(err)
 	}
 	defer sqlDB.Close()
 
@@ -57,26 +57,30 @@ func main() {
 
 	health := healtchecker.NewHealthCkeck(cfg, sqlDB, syncChan)
 	if checker {
-		go health.Run()
+		go func(hc *healtchecker.HealthCheck) {
+			err := health.Run()
+			if err != nil {
+				grpclog.Fatalln(err)
+			}
+		}(health)
 	}
 
-	wg := &sync.WaitGroup{}
-
-	application, err := apps.NewApp(cfg, sqlDB, syncChan)
+	restApi, err := apps.NewApp(cfg, sqlDB, syncChan)
 	if err != nil {
-		log.Fatalf("projectionist-api: error: %v", err)
+		grpclog.Fatalf("projectionist-api: error: %v", err)
 	}
 
-	wg.Add(1)
-	go apps.RunGRPC(wg, cfg, sqlDB)
+	go restApi.Run()
 
-	wg.Add(1)
-	go application.Run(wg)
+	go apps.RunGRPC(cfg, sqlDB)
 
-	wg.Add(1)
-	go apps.RunGrpcApi(wg, cfg)
+	go apps.RunGrpcApi(cfg)
 
-	wg.Wait()
+	<-done // graceful down
 
-	health.Stop()
+	if checker {
+		health.Stop()
+	}
+
+	grpclog.Infoln("Projectionist is stopped")
 }

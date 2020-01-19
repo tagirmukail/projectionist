@@ -3,12 +3,12 @@ package apps
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"net/http"
-	"sync"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+
+	"google.golang.org/grpc/grpclog"
 
 	"projectionist/config"
 	"projectionist/consts"
@@ -45,20 +45,19 @@ func NewApp(cfg *config.Config, sqlDB *sql.DB, syncShan chan string) (*App, erro
 	}, nil
 }
 
-func (a *App) Run(wg *sync.WaitGroup) {
-	defer wg.Done()
+func (a *App) Run() {
 	var address = fmt.Sprintf("%s:%d", a.cfg.Host, a.cfg.Port)
 	var err error
 
 	// create dir for saving configs files
 	if err = utils.CreateDir(consts.PathSaveCfgs); err != nil {
-		log.Fatal(err)
+		grpclog.Fatalln(err)
 	}
 
 	router := a.newRouter()
 
-	log.Printf("Start rest api service on: %v", address)
-	log.Fatal(http.ListenAndServe(
+	grpclog.Infof("Start rest api service on: %v", address)
+	grpclog.Fatal(http.ListenAndServe(
 		address,
 		handlers.CORS(
 			handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}),
