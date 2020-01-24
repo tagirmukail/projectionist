@@ -55,13 +55,13 @@ func New(code Code, httpCode int, httpError string, err string) IError {
 	return e
 }
 
-func Newf(code Code, httpCode int, httpError string, err string, args ...interface{}) IError {
+func Newf(code Code, httpCode int, httpError string, errPtrn string, args ...interface{}) IError {
 	checkTimeZone()
 
 	e := &Error{
 		t:         time.Now().In(timeZone),
 		code:      code,
-		err:       fmt.Sprintf(err, args...),
+		err:       fmt.Sprintf(errPtrn, args...),
 		httpCode:  httpCode,
 		httpError: httpError,
 	}
