@@ -11,4 +11,5 @@ type IDBProvider interface {
 	Pagination(models.Model, int, int) ([]models.Model, error)
 	Update(models.Model, int) error
 	Delete(models.Model, int) error
+	GetDB() interface{}
 }

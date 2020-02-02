@@ -79,7 +79,7 @@ func TestNewf(t *testing.T) {
 		httpCode  int
 		httpError string
 		errPtrn   string
-		args      []interface{}
+		args      []string
 	}
 	tests := []struct {
 		name           string
@@ -93,10 +93,10 @@ func TestNewf(t *testing.T) {
 				code:      1,
 				httpCode:  404,
 				httpError: "not found",
-				errPtrn:   "%v %d not exist in db",
-				args:      []interface{}{"book", 1},
+				errPtrn:   "not exist in db",
+				args:      []string{"book", "1"},
 			},
-			wantErrMsg:     "book 1 not exist in db",
+			wantErrMsg:     "not exist in db, book: 1",
 			wantHttpErrMsg: "not found",
 		},
 	}

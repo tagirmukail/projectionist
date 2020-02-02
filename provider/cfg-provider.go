@@ -1,61 +1,46 @@
 package provider
 
 import (
-	"encoding/json"
-	"io/ioutil"
-	"log"
-	"os"
-	"path/filepath"
-	"projectionist/consts"
+	"fmt"
+	"strconv"
+	"strings"
+
+	"github.com/dgraph-io/badger"
+	jsoniter "github.com/json-iterator/go"
+	"google.golang.org/grpc/grpclog"
+
 	"projectionist/models"
-	"sync"
+	"projectionist/utils/errors"
 )
 
+const (
+	sep          = "|"
+	MaxID string = "MaxID"
+
+	indexID        = 0
+	indexName      = 1
+	indexIsDeleted = 2
+)
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
+
 type CfgProvider struct {
-	*sync.RWMutex
-	configs []models.Model
-	maxID   int
+	db    *badger.DB
+	maxID int
 }
 
-func NewCfgProvider() (*CfgProvider, error) {
+func NewCfgProvider(db *badger.DB) (*CfgProvider, error) {
 	var cfgProvider = &CfgProvider{
-		RWMutex: &sync.RWMutex{},
-		configs: []models.Model{},
+		db: db,
 	}
 
-	var err = filepath.Walk(consts.PathSaveCfgs, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
+	err := db.View(func(txn *badger.Txn) error {
+		id, err := getMaxID(txn)
+		if err != nil && err != badger.ErrKeyNotFound {
 			return err
 		}
 
-		if info.IsDir() {
-			return nil
-		}
-
-		if filepath.Ext(path) != "json" {
-			log.Printf("NewCfgProvider() error: file %v extension not json", path)
-			return nil
-		}
-
-		bfile, err := ioutil.ReadFile(path)
-		if err != nil {
-			return nil
-		}
-
-		var cfg = models.Configuration{}
-
-		err = json.Unmarshal(bfile, &cfg)
-		if err != nil {
-			return err
-		}
-
-		if cfg.ID > cfgProvider.maxID {
-			cfgProvider.maxID = cfg.ID
-		}
-
-		cfgProvider.Lock()
-		cfgProvider.configs = append(cfgProvider.configs, &cfg)
-		cfgProvider.Unlock()
+		cfgProvider.maxID = id
 
 		return nil
 	})
@@ -67,128 +52,327 @@ func NewCfgProvider() (*CfgProvider, error) {
 	return cfgProvider, nil
 }
 
+func getMaxID(txn *badger.Txn) (int, error) {
+	var valCopy []byte
+	item, err := txn.Get([]byte(MaxID))
+	if err != nil {
+		if err == badger.ErrKeyNotFound {
+			grpclog.Infof("max id not exist")
+		}
+		return 0, err
+	}
+
+	err = item.Value(func(val []byte) error {
+		valCopy = append([]byte{}, val...)
+		return nil
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	idStr := string(valCopy)
+	return strconv.Atoi(idStr)
+}
+
+func (c *CfgProvider) GetDB() interface{} {
+	return c.db
+}
+
+func find(txn *badger.Txn, keyPrefStr string) *badger.Item {
+	iter := txn.NewIterator(badger.DefaultIteratorOptions)
+	defer iter.Close()
+
+	var item *badger.Item
+	keyPref := []byte(keyPrefStr)
+	for iter.Seek(keyPref); iter.ValidForPrefix(keyPref); iter.Next() {
+		item = iter.Item()
+		if item != nil {
+			break
+		}
+	}
+
+	return item
+}
+
 func (c *CfgProvider) Save(m models.Model) error {
 	m.SetID(c.maxID + 1)
 
-	c.Lock()
-	c.configs = append(c.configs, m)
-	c.Unlock()
+	txn := c.db.NewTransaction(true)
+	defer txn.Discard()
 
-	return m.Save()
+	data, err := json.Marshal(m)
+	if err != nil {
+		return err
+	}
+
+	item := find(txn, buildKeyPref(m))
+	if item != nil {
+		return errors.Newf(
+			1,
+			500,
+			"config with this name already exist",
+			"config model with key %v already exist in kv db", m.GetName())
+	}
+
+	entryNameToData := badger.NewEntry([]byte(buildKey(
+		m,
+	)), data)
+	err = txn.SetEntry(entryNameToData)
+	if err != nil {
+		return err
+	}
+
+	err = txn.Set([]byte(MaxID), []byte(strconv.Itoa(c.maxID)))
+	if err != nil {
+		return err
+	}
+
+	c.maxID++
+
+	return txn.Commit()
 }
 
-func (c *CfgProvider) GetByName(m models.Model, name string) (models.Model, error) {
-	c.RLock()
-	for _, model := range c.configs {
-		if name == model.GetName() {
-			c.RUnlock()
-			return model, nil
-		}
-	}
-	c.RUnlock()
+func (c *CfgProvider) GetByName(_ models.Model, name string) (models.Model, error) {
+	var valCopy []byte
+	err := c.db.View(func(txn *badger.Txn) error {
+		var err error
+		iter := txn.NewIterator(badger.DefaultIteratorOptions)
+		defer iter.Close()
+		for iter.Rewind(); iter.Valid(); iter.Next() {
+			item := iter.Item()
+			key := string(item.Key())
+			if !strings.Contains(key, name) {
+				continue
+			}
 
-	return m, m.GetByName(name)
+			valCopy, err = item.ValueCopy(nil)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(valCopy) == 0 {
+		return nil, errors.Newf(
+			2,
+			404,
+			"configuration not exist",
+			"configuration by name %s not exist",
+			name,
+		)
+	}
+
+	conf := &models.Configuration{}
+	return conf, json.Unmarshal(valCopy, conf)
 }
 
-func (c *CfgProvider) GetByID(m models.Model, id int64) (models.Model, error) {
-	c.RLock()
-	for _, model := range c.configs {
-		if id == int64(model.GetID()) {
-			c.RUnlock()
-			return model, nil
-		}
-	}
-	c.RUnlock()
+func (c *CfgProvider) GetByID(_ models.Model, id int64) (models.Model, error) {
+	var valCopy []byte
+	err := c.db.View(func(txn *badger.Txn) error {
+		var err error
 
-	return m, m.GetByID(id)
+		item := find(txn, strconv.FormatInt(id, 10))
+		if item == nil {
+			return errors.ErrNotExist
+		}
+
+		valCopy, err = item.ValueCopy(nil)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(valCopy) == 0 {
+		return nil, errors.ErrNotExist
+	}
+
+	conf := &models.Configuration{}
+	return conf, json.Unmarshal(valCopy, conf)
 }
 
 func (c *CfgProvider) IsExistByName(m models.Model) (error, bool) {
-	c.RLock()
-	for _, model := range c.configs {
-		if m.GetName() == model.GetName() {
-			c.RUnlock()
-			return nil, true
-		}
-	}
-	c.RUnlock()
+	err := c.db.View(func(txn *badger.Txn) error {
+		iter := txn.NewIterator(badger.DefaultIteratorOptions)
+		defer iter.Close()
+		for iter.Rewind(); iter.Valid(); iter.Next() {
+			item := iter.Item()
+			key := string(item.Key())
+			if !strings.Contains(key, m.GetName()) {
+				continue
+			}
 
-	return m.IsExistByName()
+			return nil
+		}
+
+		return errors.ErrNotExist
+	})
+
+	return err, err == nil
 }
 
-func (c *CfgProvider) Count(m models.Model) (int, error) {
-	c.RLock()
-	var count = len(c.configs)
-	c.RUnlock()
+func (c *CfgProvider) Count(_ models.Model) (int, error) {
+	var count int
+	return count, c.db.View(func(txn *badger.Txn) error {
+		opts := badger.DefaultIteratorOptions
+		opts.PrefetchSize = 10
+		it := txn.NewIterator(opts)
+		defer it.Close()
+		for it.Rewind(); it.Valid(); it.Next() {
+			count++
+		}
 
-	return count, nil
+		return nil
+	})
 }
 
 func (c *CfgProvider) Pagination(m models.Model, start, stop int) ([]models.Model, error) {
 	var result []models.Model
-	c.RLock()
-	var lastCfgNumber = len(c.configs) - 1
-	c.RUnlock()
-	if stop > lastCfgNumber {
-		stop = lastCfgNumber
-	}
 
 	if start < 0 {
 		start = 0
 	}
 
-	var maxResultCount = stop - start
-	var resultCount int
-
-	c.RLock()
-	for i := 0; i < len(c.configs); i++ {
-		if resultCount >= maxResultCount {
-			break
-		}
-
-		if c.configs[i].IsDeleted() {
-			continue
-		}
-
-		if i < start {
-			continue
-		}
-
-		result = append(result, c.configs[i])
-		resultCount++
-	}
-	c.RUnlock()
-
-	if len(result) == 0 {
-		return m.Pagination(start, stop)
+	if start > stop {
+		return result, errors.Newf(
+			3,
+			400,
+			"pagination invalid",
+			"invalid pagination: start:%d and stop:%d",
+			strconv.Itoa(start), strconv.Itoa(stop),
+		)
 	}
 
-	return result, nil
+	return result, c.db.View(func(txn *badger.Txn) error {
+		var err error
+		iter := txn.NewIterator(badger.DefaultIteratorOptions)
+		defer iter.Close()
+		var count int
+		var valCopy []byte
+		for iter.Rewind(); iter.Valid(); iter.Next() {
+			count++
+			if count >= start && count <= stop {
+				item := iter.Item()
+				valCopy, err = item.ValueCopy(nil)
+				if err != nil {
+					return err
+				}
+
+				conf := &models.Configuration{}
+				err = json.Unmarshal(valCopy, conf)
+				if err != nil {
+					return err
+				}
+
+				result = append(result, conf)
+			}
+		}
+
+		return nil
+	})
 }
 
 func (c *CfgProvider) Update(m models.Model, id int) error {
-	c.Lock()
-	for i, model := range c.configs {
-		if model.GetID() == id {
-			c.configs[i] = m
-			break
-		}
-	}
-	c.Unlock()
+	txn := c.db.NewTransaction(true)
+	defer txn.Discard()
 
-	return m.Update(id)
+	item := find(txn, strconv.Itoa(id))
+	if item == nil {
+		return errors.ErrNotExist
+	}
+
+	m.SetID(id)
+	data, err := json.Marshal(m)
+	if err != nil {
+		return err
+	}
+
+	err = txn.Delete(item.Key())
+	if err != nil {
+		return err
+	}
+
+	err = txn.Set([]byte(buildKey(m)), data)
+	if err != nil {
+		return err
+	}
+
+	return txn.Commit()
 }
 
 func (c *CfgProvider) Delete(m models.Model, id int) error {
-	c.Lock()
-	for i, model := range c.configs {
-		if model.GetID() == id {
-			c.configs[i].SetDeleted()
-			c.configs = append(c.configs[:i], c.configs[i+1:]...)
-			break
-		}
-	}
-	c.Unlock()
+	txn := c.db.NewTransaction(true)
+	defer txn.Discard()
 
-	return m.Delete(id)
+	item := find(txn, strconv.Itoa(id))
+	if item == nil {
+		return errors.ErrNotExist
+	}
+
+	err := txn.Delete(item.Key())
+	if err != nil {
+		return err
+	}
+
+	return txn.Commit()
+}
+
+// buildKey build key (id|name|0 if not deleted, 1 if deleted), example: 23|app1|0
+func buildKey(m models.Model) string {
+	var b = strings.Builder{}
+	b.WriteString(strconv.Itoa(m.GetID()))
+	b.WriteString(sep)
+	b.WriteString(m.GetName())
+	b.WriteString(sep)
+	if m.IsDeleted() {
+		b.WriteString(strconv.Itoa(1))
+	} else {
+		b.WriteString(strconv.Itoa(0))
+	}
+	return b.String()
+}
+
+// buildKeyPref build key pref by id and name, example: 23|app1
+func buildKeyPref(m models.Model) string {
+	var b = strings.Builder{}
+	b.WriteString(strconv.Itoa(m.GetID()))
+	b.WriteString(sep)
+	b.WriteString(m.GetName())
+	b.WriteString(sep)
+	return b.String()
+}
+
+func decodeKey(key string) (models.Model, error) {
+	pairs := strings.Split(key, sep)
+	if len(pairs) != 3 {
+		return nil, fmt.Errorf("invalid key: %s", key)
+	}
+
+	idStr, name, delStr := pairs[indexID], pairs[indexName], pairs[indexIsDeleted]
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return nil, err
+	}
+
+	delN, err := strconv.Atoi(delStr)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.Configuration{
+		ID:      id,
+		Name:    name,
+		Deleted: delN,
+	}, nil
 }

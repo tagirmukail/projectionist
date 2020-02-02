@@ -19,6 +19,7 @@ config.json
 projectionist
 files
 db.sqlite
+badgerdb
 
 # dependencies
 client/**/node_modules

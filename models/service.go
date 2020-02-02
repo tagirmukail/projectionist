@@ -16,7 +16,6 @@ const (
 )
 
 type Service struct {
-	dbCtx     *sql.DB
 	ID        int     `json:"id";db:"id"`
 	Name      string  `json:"name";db:"name"`
 	Link      string  `json:"link";db:"link"`
@@ -67,20 +66,10 @@ func (s *Service) Validate() error {
 	return nil
 }
 
-func (s *Service) SetDBCtx(iDB interface{}) error {
-	db, ok := iDB.(*sql.DB)
-	if !ok {
-		return fmt.Errorf("%v is not sql.DB", iDB)
-	}
-
-	s.dbCtx = db
-
-	return nil
-}
-func (s *Service) IsExistByName() (error, bool) {
+func (s *Service) IsExistByName(db *sql.DB) (error, bool) {
 	var serviceName string
 
-	var err = s.dbCtx.QueryRow("SELECT name FROM services where name=?", s.Name).Scan(&serviceName)
+	var err = db.QueryRow("SELECT name FROM services where name=?", s.Name).Scan(&serviceName)
 	if err != nil && err != sql.ErrNoRows {
 		return err, false
 	}
@@ -91,17 +80,17 @@ func (s *Service) IsExistByName() (error, bool) {
 
 	return nil, true
 }
-func (s *Service) Count() (int, error) {
+func (s *Service) Count(db *sql.DB) (int, error) {
 	var count int
-	var err = s.dbCtx.QueryRow("SELECT count(id) FROM services").Scan(&count)
+	var err = db.QueryRow("SELECT count(id) FROM services").Scan(&count)
 	if err != nil {
 		return 0, err
 	}
 
 	return count, nil
 }
-func (s *Service) Save() error {
-	result, err := s.dbCtx.Exec(
+func (s *Service) Save(db *sql.DB) error {
+	result, err := db.Exec(
 		"INSERT INTO services (name, link, Token, frequency, status) VALUES (?,?,?,?,?)",
 		s.Name,
 		s.Link,
@@ -123,8 +112,8 @@ func (s *Service) Save() error {
 	return nil
 }
 
-func (s *Service) GetByName(name string) error {
-	return s.dbCtx.QueryRow(
+func (s *Service) GetByName(db *sql.DB, name string) error {
+	return db.QueryRow(
 		"SELECT id, name, link, Token, frequency, status, deleted FROM services WHERE name=?", name).Scan(
 		&s.ID,
 		&s.Name,
@@ -136,8 +125,8 @@ func (s *Service) GetByName(name string) error {
 	)
 }
 
-func (s *Service) GetByID(id int64) error {
-	return s.dbCtx.QueryRow(
+func (s *Service) GetByID(db *sql.DB, id int64) error {
+	return db.QueryRow(
 		"SELECT id, name, link, Token, frequency, status, deleted FROM services WHERE id=?", id).Scan(
 		&s.ID,
 		&s.Name,
@@ -149,10 +138,10 @@ func (s *Service) GetByID(id int64) error {
 	)
 }
 
-func (s *Service) Pagination(start, end int) ([]Model, error) {
+func (s *Service) Pagination(db *sql.DB, start, end int) ([]Model, error) {
 	var result []Model
 
-	raws, err := s.dbCtx.Query(
+	raws, err := db.Query(
 		"SELECT id, name, link, Token, frequency, status, deleted FROM services ORDER BY id ASC limit ?, ?",
 		start, end)
 	if err != nil {
@@ -174,12 +163,7 @@ func (s *Service) Pagination(start, end int) ([]Model, error) {
 			return nil, err
 		}
 
-		err = service.SetDBCtx(s.dbCtx)
-		if err != nil {
-			return nil, err
-		}
-
-		service.Emails, err = service.GetEmails()
+		service.Emails, err = service.GetEmails(db)
 		if err != nil {
 			return nil, err
 		}
@@ -190,17 +174,17 @@ func (s *Service) Pagination(start, end int) ([]Model, error) {
 	return result, nil
 }
 
-func (s *Service) Update(id int) error {
+func (s *Service) Update(db *sql.DB, id int) error {
 	var query, args = s.buildServiceUpdateQuery(id)
 
-	tx, err := s.dbCtx.Begin()
+	tx, err := db.Begin()
 	if err != nil {
 		return err
 	}
 
 	var res sql.Result
 	if len(args) > 1 {
-		res, err = s.dbCtx.Exec(
+		res, err = db.Exec(
 			query, args...,
 		)
 		if err != nil {
@@ -221,11 +205,6 @@ func (s *Service) Update(id int) error {
 	}
 
 	for _, email := range s.Emails {
-		err = email.SetDBCtx(s.dbCtx)
-		if err != nil {
-			tx.Rollback()
-			return err
-		}
 		err = email.Validate()
 		if err != nil {
 			tx.Rollback()
@@ -236,7 +215,7 @@ func (s *Service) Update(id int) error {
 			tx.Rollback()
 			return fmt.Errorf("invalid service id for email %v", email.Email)
 		}
-		err = email.Save()
+		err = email.Save(db)
 		if err != nil {
 			tx.Rollback()
 			return err
@@ -246,13 +225,13 @@ func (s *Service) Update(id int) error {
 	return tx.Commit()
 }
 
-func (s *Service) Delete(id int) error {
-	tx, err := s.dbCtx.Begin()
+func (s *Service) Delete(db *sql.DB, id int) error {
+	tx, err := db.Begin()
 	if err != nil {
 		return err
 	}
 
-	res, err := s.dbCtx.Exec("UPDATE services SET deleted=1 WHERE id=?", id)
+	res, err := db.Exec("UPDATE services SET deleted=1 WHERE id=?", id)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -269,7 +248,7 @@ func (s *Service) Delete(id int) error {
 		return fmt.Errorf("service with id %d not deleted", id)
 	}
 
-	res, err = s.dbCtx.Exec("DELETE FROM emails WHERE service_id=?", id)
+	res, err = db.Exec("DELETE FROM emails WHERE service_id=?", id)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -292,6 +271,10 @@ func (s *Service) SetID(id int) {
 	s.ID = id
 }
 
+func (s *Service) SetName(name string) {
+	s.Name = name
+}
+
 func (s *Service) GetName() string {
 	return s.Name
 }
@@ -304,10 +287,10 @@ func (s *Service) IsDeleted() bool {
 	return s.Deleted > 0
 }
 
-func (s *Service) GetEmails() ([]Email, error) {
+func (s *Service) GetEmails(db *sql.DB) ([]Email, error) {
 	s.Emails = []Email{}
 
-	rows, err := s.dbCtx.Query("SELECT id, service_id, email FROM emails WHERE service_id=?", s.ID)
+	rows, err := db.Query("SELECT id, service_id, email FROM emails WHERE service_id=?", s.ID)
 	if err != nil {
 		return nil, err
 	}

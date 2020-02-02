@@ -2,6 +2,7 @@ package errors
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 )
@@ -24,14 +25,16 @@ type IError interface {
 	Error() string
 	HTTPCode() int
 	HTTPError() string
+	SetArgs(args ...string)
 }
 
 type Error struct {
-	t         time.Time
-	code      Code
-	err       string
-	httpCode  int
-	httpError string
+	t             time.Time
+	code          Code
+	err           string
+	httpCode      int
+	httpError     string
+	keyValuesArgs []string
 }
 
 type Code int
@@ -41,11 +44,12 @@ func New(code Code, httpCode int, httpError string, err string) IError {
 	checkTimeZone()
 
 	e := &Error{
-		t:         time.Now().In(timeZone),
-		code:      code,
-		err:       err,
-		httpCode:  httpCode,
-		httpError: httpError,
+		t:             time.Now().In(timeZone),
+		code:          code,
+		err:           err,
+		httpCode:      httpCode,
+		httpError:     httpError,
+		keyValuesArgs: []string{},
 	}
 
 	mx.Lock()
@@ -55,15 +59,16 @@ func New(code Code, httpCode int, httpError string, err string) IError {
 	return e
 }
 
-func Newf(code Code, httpCode int, httpError string, errPtrn string, args ...interface{}) IError {
+func Newf(code Code, httpCode int, httpError string, errPtrn string, keyValuesArgs ...string) IError {
 	checkTimeZone()
 
 	e := &Error{
-		t:         time.Now().In(timeZone),
-		code:      code,
-		err:       fmt.Sprintf(errPtrn, args...),
-		httpCode:  httpCode,
-		httpError: httpError,
+		t:             time.Now().In(timeZone),
+		code:          code,
+		err:           errPtrn,
+		httpCode:      httpCode,
+		httpError:     httpError,
+		keyValuesArgs: keyValuesArgs,
 	}
 
 	mx.Lock()
@@ -86,7 +91,30 @@ func (e *Error) Code() Code {
 
 // Error - returned error for log
 func (e *Error) Error() string {
-	return fmt.Sprintf(errMsgPtrn, e.httpCode, e.code, e.t.Format(time.RFC3339Nano), e.err)
+	b := strings.Builder{}
+	b.WriteString(e.err)
+	if len(e.keyValuesArgs) > 0 {
+		b.WriteString(", ")
+	}
+
+	var kvCount = 0
+	for _, item := range e.keyValuesArgs {
+		switch kvCount {
+		case 0:
+			b.WriteString(item)
+		case 1:
+			b.WriteString(": ")
+			b.WriteString(item)
+		case 2:
+			kvCount = 0
+			b.WriteString(", ")
+		default:
+		}
+
+		kvCount++
+	}
+
+	return fmt.Sprintf(errMsgPtrn, e.httpCode, e.code, e.t.Format(time.RFC3339Nano), b.String())
 }
 
 // HTTPCode - returned http error code
@@ -97,6 +125,10 @@ func (e *Error) HTTPCode() int {
 // HTTPError - error message for http client with code
 func (e *Error) HTTPError() string {
 	return fmt.Sprintf(httpErrMsgPtrn, e.code, e.t.Format(time.RFC1123), e.httpError)
+}
+
+func (e *Error) SetArgs(args ...string) {
+	e.keyValuesArgs = append(e.keyValuesArgs, args...)
 }
 
 // SetTimeZone - set time zone for errors

@@ -99,7 +99,15 @@ func GetService(dbProvider provider.IDBProvider) http.HandlerFunc {
 			return
 		}
 
-		service.Emails, err = service.GetEmails()
+		iDB := dbProvider.GetDB()
+		if iDB == nil {
+			log.Printf("database empty in db provider")
+			w.WriteHeader(http.StatusInternalServerError)
+			utils.JsonRespond(w, utils.Message(false, consts.SmtWhenWrongResp))
+			return
+		}
+
+		service.Emails, err = service.GetEmails(iDB.(*sql.DB))
 		if err != nil {
 			log.Printf("error: get service: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)

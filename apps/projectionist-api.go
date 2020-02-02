@@ -3,6 +3,7 @@ package apps
 import (
 	"database/sql"
 	"fmt"
+	"github.com/dgraph-io/badger"
 	"net/http"
 
 	"github.com/gorilla/handlers"
@@ -26,13 +27,13 @@ type App struct {
 	cfgProvider provider.IDBProvider
 }
 
-func NewApp(cfg *config.Config, sqlDB *sql.DB, syncShan chan string) (*App, error) {
+func NewApp(cfg *config.Config, sqlDB *sql.DB, badgerDB *badger.DB, syncShan chan string) (*App, error) {
 	// initialization database tables
 	if err := db.InitTables(sqlDB); err != nil {
 		return nil, err
 	}
 
-	cfgProvider, err := provider.NewCfgProvider()
+	cfgProvider, err := provider.NewCfgProvider(badgerDB)
 	if err != nil {
 		return nil, err
 	}
