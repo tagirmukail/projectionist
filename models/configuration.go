@@ -18,15 +18,11 @@ type Configuration struct {
 }
 
 func (c *Configuration) Validate() error {
-	if c.ID == 0 {
-		return fmt.Errorf("id must be not 0")
-	}
-
 	if c.Name == "" {
 		return fmt.Errorf("name must be not empty")
 	}
 
-	if c.Config == nil {
+	if c.Config == nil || len(c.Config) == 0 {
 		return fmt.Errorf("config field must be not empty")
 	}
 

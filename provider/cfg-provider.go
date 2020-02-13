@@ -95,7 +95,15 @@ func find(txn *badger.Txn, keyPrefStr string) *badger.Item {
 }
 
 func (c *CfgProvider) Save(m models.Model) error {
-	m.SetID(c.maxID + 1)
+	var err error
+	c.maxID++
+	defer func(err error) {
+		if err != nil {
+			c.maxID--
+		}
+	}(err)
+
+	m.SetID(c.maxID)
 
 	txn := c.db.NewTransaction(true)
 	defer txn.Discard()
@@ -107,11 +115,12 @@ func (c *CfgProvider) Save(m models.Model) error {
 
 	item := find(txn, buildKeyPref(m))
 	if item != nil {
-		return errors.Newf(
+		err = errors.Newf(
 			1,
 			500,
 			"config with this name already exist",
 			"config model with key %v already exist in kv db", m.GetName())
+		return err
 	}
 
 	entryNameToData := badger.NewEntry([]byte(buildKey(
@@ -126,8 +135,6 @@ func (c *CfgProvider) Save(m models.Model) error {
 	if err != nil {
 		return err
 	}
-
-	c.maxID++
 
 	return txn.Commit()
 }
@@ -260,20 +267,24 @@ func (c *CfgProvider) Pagination(m models.Model, start, stop int) ([]models.Mode
 		var count int
 		var valCopy []byte
 		for iter.Rewind(); iter.Valid(); iter.Next() {
+			item := iter.Item()
+			key := string(item.Key())
+			keyParts := strings.Split(key, sep)
+			if key == MaxID || len(keyParts) != 3 {
+				continue
+			}
+
 			count++
-			if count >= start && count <= stop {
-				item := iter.Item()
+			if count > start && count <= stop {
 				valCopy, err = item.ValueCopy(nil)
 				if err != nil {
 					return err
 				}
-
 				conf := &models.Configuration{}
 				err = json.Unmarshal(valCopy, conf)
 				if err != nil {
 					return err
 				}
-
 				result = append(result, conf)
 			}
 		}
