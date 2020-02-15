@@ -19,10 +19,10 @@ build:
 	@GO111MODULE=$(GO111MODULE) $(GOBUILD) -o $(BINARY_NAME) -v
 	@echo "#Build completed"
 
-test-verbose-cover:
+test-unit-verbose:
 	GO111MODULE=$(GO111MODULE) $(GOTEST) -v -cover ./...
 
-test-cover:
+test-unit:
 	GO111MODULE=$(GO111MODULE) $(GOTEST) -cover ./...
 
 clean:

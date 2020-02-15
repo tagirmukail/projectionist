@@ -3,7 +3,7 @@ package main
 import (
 	"database/sql"
 	"flag"
-	"github.com/dgraph-io/badger"
+	"github.com/dgraph-io/badger/v2"
 	"os"
 	"os/signal"
 	"runtime/debug"

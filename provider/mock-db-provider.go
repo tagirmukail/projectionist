@@ -92,6 +92,20 @@ func (mr *MockIDBProviderMockRecorder) GetByName(arg0, arg1 interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByName", reflect.TypeOf((*MockIDBProvider)(nil).GetByName), arg0, arg1)
 }
 
+// GetDB mocks base method
+func (m *MockIDBProvider) GetDB() interface{} {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDB")
+	ret0, _ := ret[0].(interface{})
+	return ret0
+}
+
+// GetDB indicates an expected call of GetDB
+func (mr *MockIDBProviderMockRecorder) GetDB() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDB", reflect.TypeOf((*MockIDBProvider)(nil).GetDB))
+}
+
 // IsExistByName mocks base method
 func (m *MockIDBProvider) IsExistByName(arg0 models.Model) (error, bool) {
 	m.ctrl.T.Helper()

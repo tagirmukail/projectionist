@@ -32,63 +32,6 @@ func (m *MockModel) EXPECT() *MockModelMockRecorder {
 	return m.recorder
 }
 
-// Count mocks base method
-func (m *MockModel) Count() (int, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Count")
-	ret0, _ := ret[0].(int)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Count indicates an expected call of Count
-func (mr *MockModelMockRecorder) Count() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Count", reflect.TypeOf((*MockModel)(nil).Count))
-}
-
-// Delete mocks base method
-func (m *MockModel) Delete(arg0 int) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Delete indicates an expected call of Delete
-func (mr *MockModelMockRecorder) Delete(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockModel)(nil).Delete), arg0)
-}
-
-// GetByID mocks base method
-func (m *MockModel) GetByID(arg0 int64) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByID", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// GetByID indicates an expected call of GetByID
-func (mr *MockModelMockRecorder) GetByID(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockModel)(nil).GetByID), arg0)
-}
-
-// GetByName mocks base method
-func (m *MockModel) GetByName(arg0 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByName", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// GetByName indicates an expected call of GetByName
-func (mr *MockModelMockRecorder) GetByName(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByName", reflect.TypeOf((*MockModel)(nil).GetByName), arg0)
-}
-
 // GetID mocks base method
 func (m *MockModel) GetID() int {
 	m.ctrl.T.Helper()
@@ -131,64 +74,6 @@ func (mr *MockModelMockRecorder) IsDeleted() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsDeleted", reflect.TypeOf((*MockModel)(nil).IsDeleted))
 }
 
-// IsExistByName mocks base method
-func (m *MockModel) IsExistByName() (error, bool) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsExistByName")
-	ret0, _ := ret[0].(error)
-	ret1, _ := ret[1].(bool)
-	return ret0, ret1
-}
-
-// IsExistByName indicates an expected call of IsExistByName
-func (mr *MockModelMockRecorder) IsExistByName() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsExistByName", reflect.TypeOf((*MockModel)(nil).IsExistByName))
-}
-
-// Pagination mocks base method
-func (m *MockModel) Pagination(arg0, arg1 int) ([]Model, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Pagination", arg0, arg1)
-	ret0, _ := ret[0].([]Model)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Pagination indicates an expected call of Pagination
-func (mr *MockModelMockRecorder) Pagination(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Pagination", reflect.TypeOf((*MockModel)(nil).Pagination), arg0, arg1)
-}
-
-// Save mocks base method
-func (m *MockModel) Save() error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Save")
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Save indicates an expected call of Save
-func (mr *MockModelMockRecorder) Save() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockModel)(nil).Save))
-}
-
-// SetDBCtx mocks base method
-func (m *MockModel) SetDBCtx(arg0 interface{}) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetDBCtx", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SetDBCtx indicates an expected call of SetDBCtx
-func (mr *MockModelMockRecorder) SetDBCtx(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetDBCtx", reflect.TypeOf((*MockModel)(nil).SetDBCtx), arg0)
-}
-
 // SetDeleted mocks base method
 func (m *MockModel) SetDeleted() {
 	m.ctrl.T.Helper()
@@ -213,18 +98,16 @@ func (mr *MockModelMockRecorder) SetID(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetID", reflect.TypeOf((*MockModel)(nil).SetID), arg0)
 }
 
-// Update mocks base method
-func (m *MockModel) Update(arg0 int) error {
+// SetName mocks base method
+func (m *MockModel) SetName(arg0 string) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
+	m.ctrl.Call(m, "SetName", arg0)
 }
 
-// Update indicates an expected call of Update
-func (mr *MockModelMockRecorder) Update(arg0 interface{}) *gomock.Call {
+// SetName indicates an expected call of SetName
+func (mr *MockModelMockRecorder) SetName(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockModel)(nil).Update), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetName", reflect.TypeOf((*MockModel)(nil).SetName), arg0)
 }
 
 // Validate mocks base method

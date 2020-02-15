@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/dgraph-io/badger"
+	"github.com/dgraph-io/badger/v2"
 	jsoniter "github.com/json-iterator/go"
 	"google.golang.org/grpc/grpclog"
 
@@ -142,13 +142,17 @@ func (c *CfgProvider) Save(m models.Model) error {
 func (c *CfgProvider) GetByName(_ models.Model, name string) (models.Model, error) {
 	var valCopy []byte
 	err := c.db.View(func(txn *badger.Txn) error {
-		var err error
 		iter := txn.NewIterator(badger.DefaultIteratorOptions)
 		defer iter.Close()
 		for iter.Rewind(); iter.Valid(); iter.Next() {
 			item := iter.Item()
 			key := string(item.Key())
-			if !strings.Contains(key, name) {
+			_, itemName, _, err := getKeyPairs(key)
+			if err != nil {
+				grpclog.Warningf("getKeyPairs error: %v", err)
+				continue
+			}
+			if itemName != name {
 				continue
 			}
 
@@ -170,7 +174,8 @@ func (c *CfgProvider) GetByName(_ models.Model, name string) (models.Model, erro
 			2,
 			404,
 			"configuration not exist",
-			"configuration by name %s not exist",
+			"configuration not exist",
+			"name",
 			name,
 		)
 	}
@@ -215,7 +220,12 @@ func (c *CfgProvider) IsExistByName(m models.Model) (error, bool) {
 		for iter.Rewind(); iter.Valid(); iter.Next() {
 			item := iter.Item()
 			key := string(item.Key())
-			if !strings.Contains(key, m.GetName()) {
+			_, itemName, _, err := getKeyPairs(key)
+			if err != nil {
+				grpclog.Warningf("getKeyPairs error: %v", err)
+				continue
+			}
+			if itemName != m.GetName() {
 				continue
 			}
 
@@ -236,6 +246,14 @@ func (c *CfgProvider) Count(_ models.Model) (int, error) {
 		it := txn.NewIterator(opts)
 		defer it.Close()
 		for it.Rewind(); it.Valid(); it.Next() {
+			item := it.Item()
+			key := string(item.Key())
+			_, _, _, err := getKeyPairs(key)
+			if err != nil {
+				grpclog.Warningf("getKeyPairs error: %v", err)
+				continue
+			}
+
 			count++
 		}
 
@@ -243,7 +261,7 @@ func (c *CfgProvider) Count(_ models.Model) (int, error) {
 	})
 }
 
-func (c *CfgProvider) Pagination(m models.Model, start, stop int) ([]models.Model, error) {
+func (c *CfgProvider) Pagination(_ models.Model, start, stop int) ([]models.Model, error) {
 	var result []models.Model
 
 	if start < 0 {
@@ -321,7 +339,7 @@ func (c *CfgProvider) Update(m models.Model, id int) error {
 	return txn.Commit()
 }
 
-func (c *CfgProvider) Delete(m models.Model, id int) error {
+func (c *CfgProvider) Delete(_ models.Model, id int) error {
 	txn := c.db.NewTransaction(true)
 	defer txn.Discard()
 
@@ -364,12 +382,10 @@ func buildKeyPref(m models.Model) string {
 }
 
 func decodeKey(key string) (models.Model, error) {
-	pairs := strings.Split(key, sep)
-	if len(pairs) != 3 {
-		return nil, fmt.Errorf("invalid key: %s", key)
+	idStr, name, delStr, err := getKeyPairs(key)
+	if err != nil {
+		return nil, err
 	}
-
-	idStr, name, delStr := pairs[indexID], pairs[indexName], pairs[indexIsDeleted]
 
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -386,4 +402,13 @@ func decodeKey(key string) (models.Model, error) {
 		Name:    name,
 		Deleted: delN,
 	}, nil
+}
+
+func getKeyPairs(key string) (id, name, del string, err error) {
+	pairs := strings.Split(key, sep)
+	if len(pairs) != 3 {
+		return "", "", "", fmt.Errorf("invalid key: %s", key)
+	}
+
+	return pairs[indexID], pairs[indexName], pairs[indexIsDeleted], nil
 }

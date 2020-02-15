@@ -3,7 +3,7 @@ package apps
 import (
 	"database/sql"
 	"fmt"
-	"github.com/dgraph-io/badger"
+	"github.com/dgraph-io/badger/v2"
 	"net/http"
 
 	"github.com/gorilla/handlers"
