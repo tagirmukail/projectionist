@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"flag"
+	"github.com/dgraph-io/badger/v2"
 	"os"
 	"os/signal"
 	"runtime/debug"
@@ -53,6 +54,12 @@ func main() {
 	}
 	defer sqlDB.Close()
 
+	badgerDB, err := badger.Open(badger.DefaultOptions("./badgerdb"))
+	if err != nil {
+		grpclog.Fatalf("open badger db error: %v", err)
+	}
+	defer badgerDB.Close()
+
 	syncChan := make(chan string, 300)
 
 	health := healtchecker.NewHealthCkeck(cfg, sqlDB, syncChan)
@@ -65,14 +72,14 @@ func main() {
 		}(health)
 	}
 
-	restApi, err := apps.NewApp(cfg, sqlDB, syncChan)
+	restApi, err := apps.NewApp(cfg, sqlDB, badgerDB, syncChan)
 	if err != nil {
 		grpclog.Fatalf("projectionist-api: error: %v", err)
 	}
 
 	go restApi.Run()
 
-	go apps.RunGRPC(cfg, sqlDB)
+	go apps.RunGRPC(cfg, sqlDB, badgerDB)
 
 	go apps.RunGrpcApi(cfg)
 

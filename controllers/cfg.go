@@ -3,68 +3,46 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
+	"strings"
+
+	"google.golang.org/grpc/grpclog"
+
 	"projectionist/consts"
 	"projectionist/models"
 	"projectionist/provider"
 	"projectionist/utils"
-	"strings"
 )
 
 func NewCfg(provider provider.IDBProvider) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		names, ok := r.URL.Query()["name"]
-		if !ok || len(names) == 0 {
-			w.WriteHeader(http.StatusBadRequest)
-			utils.JsonRespond(w, utils.Message(false, consts.NameIsEmptyResp))
-			return
-		}
-
-		var configFileName = names[0]
-		if configFileName == "" {
-			w.WriteHeader(http.StatusBadRequest)
-			utils.JsonRespond(w, utils.Message(false, consts.NameIsEmptyResp))
-			return
-		}
-		configFileName = fmt.Sprintf("%v.json", configFileName)
-
-		var form = make(map[string]interface{})
-		var err = json.NewDecoder(r.Body).Decode(&form)
-		if err != nil || len(form) == 0 {
+		var cfgForm = &models.Configuration{}
+		var err = json.NewDecoder(r.Body).Decode(cfgForm)
+		if err != nil {
+			grpclog.Errorf("decode form error: %v", err)
 			w.WriteHeader(http.StatusBadRequest)
 			utils.JsonRespond(w, utils.Message(false, consts.BadInputDataResp))
 			return
 		}
 
-		var cfg = &models.Configuration{}
-
-		countCfgs, err := provider.Count(cfg)
+		err = cfgForm.Validate()
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			utils.JsonRespond(w, utils.Message(false, consts.SmtWhenWrongResp))
-			return
-		}
-
-		cfg.ID = countCfgs + 1
-		cfg.Name = fmt.Sprintf(models.FileIDNAMEPtrn, cfg.ID, configFileName)
-		cfg.Config = form
-		err = cfg.Validate()
-		if err != nil {
+			grpclog.Errorf("validate form error: %v", err)
 			w.WriteHeader(http.StatusBadRequest)
 			utils.JsonRespond(w, utils.Message(false, consts.InputDataInvalidResp))
 			return
 		}
 
-		err = provider.Save(cfg)
+		err = provider.Save(cfgForm)
 		if err != nil {
+			grpclog.Errorf("save form error: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			utils.JsonRespond(w, utils.Message(false, consts.SmtWhenWrongResp))
 			return
 		}
 
 		w.WriteHeader(http.StatusOK)
-		msg := fmt.Sprintf("File %s saved", configFileName)
+		msg := fmt.Sprintf("File %s saved", cfgForm.Name)
 		utils.JsonRespond(w, utils.Message(true, msg))
 	})
 }
@@ -78,6 +56,7 @@ func GetCfg(provider provider.IDBProvider) http.HandlerFunc {
 				utils.JsonRespond(w, utils.Message(false, consts.IdIsEmptyResp))
 				return
 			}
+			grpclog.Errorf("utils.GetIDFromReq() error: %v", err)
 			w.WriteHeader(http.StatusBadRequest)
 			utils.JsonRespond(w, utils.Message(false, consts.IdIsNotNumberResp))
 			return
@@ -91,7 +70,7 @@ func GetCfg(provider provider.IDBProvider) http.HandlerFunc {
 				utils.JsonRespond(w, utils.Message(false, consts.NotExistResp))
 				return
 			}
-			log.Printf("GetCfg() error: %v", err)
+			grpclog.Errorf("provider.GetByID() error: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			utils.JsonRespond(w, utils.Message(false, consts.SmtWhenWrongResp))
 			return
@@ -125,6 +104,7 @@ func GetCfgList(provider provider.IDBProvider) http.HandlerFunc {
 				return
 			}
 
+			grpclog.Errorf("utils.GetPageAndCountFromReq error: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			utils.JsonRespond(w, utils.Message(false, consts.SmtWhenWrongResp))
 			return
@@ -133,6 +113,7 @@ func GetCfgList(provider provider.IDBProvider) http.HandlerFunc {
 		if page <= 0 {
 			w.WriteHeader(http.StatusOK)
 			respond := utils.Message(true, "")
+			respond[consts.KEY_CONFIGS] = make([]models.Model, 0)
 			utils.JsonRespond(w, respond)
 			return
 		}
@@ -141,7 +122,7 @@ func GetCfgList(provider provider.IDBProvider) http.HandlerFunc {
 
 		countAllCfgs, err := provider.Count(&models.Configuration{})
 		if err != nil {
-			log.Printf("GetCfgList() count all configs error: %v", err)
+			grpclog.Errorf("GetCfgList() count all configs error: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			utils.JsonRespond(w, utils.Message(false, consts.SmtWhenWrongResp))
 			return
@@ -150,6 +131,7 @@ func GetCfgList(provider provider.IDBProvider) http.HandlerFunc {
 		if start > countAllCfgs {
 			w.WriteHeader(http.StatusOK)
 			respond := utils.Message(true, "")
+			respond[consts.KEY_CONFIGS] = make([]models.Model, 0)
 			utils.JsonRespond(w, respond)
 			return
 		}
@@ -160,10 +142,14 @@ func GetCfgList(provider provider.IDBProvider) http.HandlerFunc {
 
 		cfgModels, err := provider.Pagination(&models.Configuration{}, start, end)
 		if err != nil {
-			log.Printf("GetCfgList() pagination by configs error: %v", err)
+			grpclog.Errorf("GetCfgList() pagination by configs error: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			utils.JsonRespond(w, utils.Message(false, consts.SmtWhenWrongResp))
 			return
+		}
+
+		if cfgModels == nil {
+			cfgModels = make([]models.Model, 0)
 		}
 
 		var respond = utils.Message(true, "")
@@ -181,6 +167,7 @@ func UpdateCfg(provider provider.IDBProvider) http.HandlerFunc {
 				utils.JsonRespond(w, utils.Message(false, consts.IdIsEmptyResp))
 				return
 			}
+			grpclog.Errorf("utils.GetIDFromReq() error: %v", err)
 			w.WriteHeader(http.StatusBadRequest)
 			utils.JsonRespond(w, utils.Message(false, consts.IdIsNotNumberResp))
 			return
@@ -189,7 +176,7 @@ func UpdateCfg(provider provider.IDBProvider) http.HandlerFunc {
 		var cfg = models.Configuration{}
 		err = json.NewDecoder(r.Body).Decode(&cfg)
 		if err != nil {
-			log.Printf("UpdateCfg() error: %v", err)
+			grpclog.Errorf("decode request body error: %v", err)
 			w.WriteHeader(http.StatusBadRequest)
 			utils.JsonRespond(w, utils.Message(false, consts.BadInputDataResp))
 			return
@@ -197,6 +184,7 @@ func UpdateCfg(provider provider.IDBProvider) http.HandlerFunc {
 
 		err = cfg.Validate()
 		if err != nil {
+			grpclog.Errorf("cfg.Validate() error: %v", err)
 			w.WriteHeader(http.StatusBadRequest)
 			utils.JsonRespond(w, utils.Message(false, consts.BadInputDataResp))
 			return
@@ -210,7 +198,7 @@ func UpdateCfg(provider provider.IDBProvider) http.HandlerFunc {
 				return
 			}
 
-			log.Printf("UpdateCfg() provider.Update() id:%d error: %v", id, err)
+			grpclog.Errorf("provider.Update(id:%d) error: %v", id, err)
 			w.WriteHeader(http.StatusInternalServerError)
 			utils.JsonRespond(w, utils.Message(false, consts.SmtWhenWrongResp))
 			return
@@ -233,6 +221,7 @@ func DeleteCfg(provider provider.IDBProvider) http.HandlerFunc {
 				utils.JsonRespond(w, utils.Message(false, consts.IdIsEmptyResp))
 				return
 			}
+			grpclog.Errorf("utils.GetIDFromReq() error: %v", err)
 			w.WriteHeader(http.StatusBadRequest)
 			utils.JsonRespond(w, utils.Message(false, consts.IdIsNotNumberResp))
 			return
@@ -247,7 +236,7 @@ func DeleteCfg(provider provider.IDBProvider) http.HandlerFunc {
 				return
 			}
 
-			log.Printf("DeleteCfg() provider.Delete() id:%d error: %v", id, err)
+			grpclog.Errorf("provider.Delete(id:%d) error: %v", id, err)
 			w.WriteHeader(http.StatusInternalServerError)
 			utils.JsonRespond(w, utils.Message(false, consts.NotDeletedResp))
 			return

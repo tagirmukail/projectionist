@@ -20,6 +20,7 @@ projectionist
 files
 badgerdb
 db.sqlite
+badgerdb
 
 # dependencies
 client/**/node_modules

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 
@@ -63,16 +62,6 @@ func GetPageAndCountFromReq(r *http.Request) (int, int, error) {
 	}
 
 	return page, count, nil
-}
-
-// CreateDir create dir
-func CreateDir(path string) error {
-	_, err := os.Stat(path)
-	if os.IsNotExist(err) {
-		err = os.Mkdir(path, os.ModePerm)
-	}
-
-	return err
 }
 
 func Pagination(page, count int) (start, end int) {

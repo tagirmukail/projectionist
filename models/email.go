@@ -9,21 +9,9 @@ import (
 var RegexEmail = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
 type Email struct {
-	dbCtx     *sql.DB
 	ID        int    `json:"id"`
 	ServiceID int    `json:"service_id"`
 	Email     string `json:"email"`
-}
-
-func (e *Email) SetDBCtx(iDB interface{}) error {
-	db, ok := iDB.(*sql.DB)
-	if !ok {
-		return fmt.Errorf("%v is not sql.DB", iDB)
-	}
-
-	e.dbCtx = db
-
-	return nil
 }
 
 func (e *Email) Validate() error {
@@ -42,19 +30,19 @@ func (e *Email) Validate() error {
 	return nil
 }
 
-func (e *Email) IsExistByName() (error, bool) { return nil, false }
-func (e *Email) Count() (int, error)          { return 0, nil }
+func (e *Email) IsExistByName(db *sql.DB) (error, bool) { return nil, false }
+func (e *Email) Count(db *sql.DB) (int, error)          { return 0, nil }
 
-func (e *Email) Save() error {
-	return insertEmail(e.dbCtx, *e)
+func (e *Email) Save(db *sql.DB) error {
+	return insertEmail(db, *e)
 }
 
-func (e *Email) GetByName(name string) error                    { return nil }
-func (e *Email) GetByID(id int64) error                         { return nil }
-func (e *Email) Pagination(start int, end int) ([]Model, error) { return nil, nil }
-func (e *Email) Update(id int) error                            { return nil }
-func (e *Email) Delete(id int) error {
-	res, err := e.dbCtx.Exec("DELETE FROM emails WHERE id=?", id)
+func (e *Email) GetByName(db *sql.DB, name string) error                    { return nil }
+func (e *Email) GetByID(db *sql.DB, id int64) error                         { return nil }
+func (e *Email) Pagination(db *sql.DB, start int, end int) ([]Model, error) { return nil, nil }
+func (e *Email) Update(db *sql.DB, id int) error                            { return nil }
+func (e *Email) Delete(db *sql.DB, id int) error {
+	res, err := db.Exec("DELETE FROM emails WHERE id=?", id)
 	if err != nil {
 		return err
 	}
@@ -70,11 +58,12 @@ func (e *Email) Delete(id int) error {
 
 	return nil
 }
-func (e *Email) GetID() int      { return e.ID }
-func (e *Email) SetID(id int)    { e.ID = id }
-func (e *Email) GetName() string { return e.Email }
-func (e *Email) SetDeleted()     {}
-func (e *Email) IsDeleted() bool { return false }
+func (e *Email) GetID() int          { return e.ID }
+func (e *Email) SetID(id int)        { e.ID = id }
+func (e *Email) GetName() string     { return e.Email }
+func (e *Email) SetName(name string) { e.Email = name }
+func (e *Email) SetDeleted()         {}
+func (e *Email) IsDeleted() bool     { return false }
 
 func insertEmail(db *sql.DB, email Email) error {
 	var existEmail Email

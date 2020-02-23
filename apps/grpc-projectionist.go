@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/dgraph-io/badger/v2"
 	"net"
 	"net/http"
 	"time"
@@ -24,13 +25,13 @@ import (
 )
 
 // RunGRPC - started grpc server
-func RunGRPC(cfg *config.Config, sqlDB *sql.DB) {
+func RunGRPC(cfg *config.Config, sqlDB *sql.DB, badgerDB *badger.DB) {
 	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", cfg.Host, cfg.GrpcPort))
 	if err != nil {
 		grpclog.Fatalf("listen error: %v", err)
 	}
 
-	cfgProvider, err := provider.NewCfgProvider()
+	cfgProvider, err := provider.NewCfgProvider(badgerDB)
 	if err != nil {
 		grpclog.Fatalf("cfg provider error: %v", err)
 	}

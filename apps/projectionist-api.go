@@ -3,6 +3,7 @@ package apps
 import (
 	"database/sql"
 	"fmt"
+	"github.com/dgraph-io/badger/v2"
 	"net/http"
 
 	"github.com/gorilla/handlers"
@@ -16,7 +17,6 @@ import (
 	"projectionist/db"
 	"projectionist/middleware"
 	"projectionist/provider"
-	"projectionist/utils"
 )
 
 type App struct {
@@ -26,13 +26,13 @@ type App struct {
 	cfgProvider provider.IDBProvider
 }
 
-func NewApp(cfg *config.Config, sqlDB *sql.DB, syncShan chan string) (*App, error) {
+func NewApp(cfg *config.Config, sqlDB *sql.DB, badgerDB *badger.DB, syncShan chan string) (*App, error) {
 	// initialization database tables
 	if err := db.InitTables(sqlDB); err != nil {
 		return nil, err
 	}
 
-	cfgProvider, err := provider.NewCfgProvider()
+	cfgProvider, err := provider.NewCfgProvider(badgerDB)
 	if err != nil {
 		return nil, err
 	}
@@ -47,12 +47,6 @@ func NewApp(cfg *config.Config, sqlDB *sql.DB, syncShan chan string) (*App, erro
 
 func (a *App) Run() {
 	var address = fmt.Sprintf("%s:%d", a.cfg.Host, a.cfg.Port)
-	var err error
-
-	// create dir for saving configs files
-	if err = utils.CreateDir(consts.PathSaveCfgs); err != nil {
-		grpclog.Fatalln(err)
-	}
 
 	router := a.newRouter()
 
@@ -85,7 +79,7 @@ func (a *App) newRouter() *mux.Router {
 	router.HandleFunc(consts.UrlUserV1+"/{id}", controllers.DeleteUser(a.dbProvider)).Methods(http.MethodGet)
 
 	router.HandleFunc(consts.UrlCfgV1, controllers.NewCfg(a.cfgProvider)).Methods(http.MethodPost)
-	router.HandleFunc(consts.UrlCfgV1, controllers.GetCfgList(a.cfgProvider)).Methods(http.MethodPost)
+	router.HandleFunc(consts.UrlCfgV1, controllers.GetCfgList(a.cfgProvider)).Methods(http.MethodGet)
 	router.HandleFunc(consts.UrlCfgV1+"/{id}", controllers.GetCfg(a.cfgProvider)).Methods(http.MethodGet)
 	router.HandleFunc(consts.UrlCfgV1+"/{id}", controllers.UpdateCfg(a.cfgProvider)).Methods(http.MethodPut)
 	router.HandleFunc(consts.UrlCfgV1+"/{id}", controllers.DeleteCfg(a.cfgProvider)).Methods(http.MethodDelete)
