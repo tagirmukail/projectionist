@@ -18,6 +18,7 @@ config.json
 
 projectionist
 files
+badgerdb
 db.sqlite
 
 # dependencies
